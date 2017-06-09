@@ -1,0 +1,35 @@
+notify:
+  webhooks:
+    - url: https://hook2xmpp.pub.warehost.de/circleci
+
+machine:
+  environment:
+    GOROOT: ""
+    PATH: "/usr/local/go/bin:/usr/local/go_workspace/bin:~/.go_workspace/bin:${PATH}"
+    GOPATH: "${HOME}/.go_workspace"
+
+dependencies:
+  override:
+    - mkdir -p ~/.go_workspace/src/github.com/${CIRCLE_PROJECT_USERNAME}
+    - ln -s ${HOME}/${CIRCLE_PROJECT_REPONAME} ${HOME}/.go_workspace/src/github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}
+    - go get -t -d -v ./...
+    - go install github.com/genofire/hook2xmpp/cmd/hook2xmpp
+  post:
+    - cp ~/.go_workspace/bin/hook2xmpp hook2xmpp.bin
+    - tar -cvzf hook2xmpp-builded.tar.gz hook2xmpp.bin config_example.conf
+    - mv hook2xmpp-builded.tar.gz $CIRCLE_ARTIFACTS
+
+
+
+test:
+  pre:
+    - go get github.com/mattn/goveralls
+    - go get golang.org/x/tools/cmd/cover
+  override:
+    - ./.test-coverage circle-ci
+
+deployment:
+  staging:
+    branch: master
+    commands:
+      - ./deploy.sh $HOST_FOR_STAGING $PORT_FOR_STAGING

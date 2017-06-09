@@ -113,7 +113,7 @@ func PayloadToString(event string, payloadOrigin interface{}) string {
 	} else if event == "issues" || event == "issue_comment" {
 		sender := payload["sender"].(map[string]interface{})
 		issue := payload["issue"].(map[string]interface{})
-		msg = fmt.Sprintf("%s %s - %s action #%f: %s \n %s", msg, sender["login"], payload["action"], issue["number"], issue["title"], issue["html_url"])
+		msg = fmt.Sprintf("%s %s - %s action #%.0f: %s \n %s", msg, sender["login"], payload["action"], issue["number"], issue["title"], issue["html_url"])
 	} else {
 		sender := payload["sender"].(map[string]interface{})
 		text := eventMsg[event]

@@ -11,6 +11,7 @@ import (
 	"github.com/mattn/go-xmpp"
 	"github.com/pierrre/githubhook"
 
+	"github.com/genofire/hook2xmpp/circleci"
 	configuration "github.com/genofire/hook2xmpp/config"
 	"github.com/genofire/hook2xmpp/github"
 	ownXMPP "github.com/genofire/hook2xmpp/xmpp"
@@ -30,7 +31,7 @@ func main() {
 
 	log.Log.Infof("Started hock2xmpp with %s", client.JID())
 
-	client.SendHtml(xmpp.Chat{Remote: config.XMPP.StartupNotify, Type: "chat", Text: "Startup of hock2xmpp"})
+	client.SendHtml(xmpp.Chat{Remote: config.XMPP.StartupNotify, Type: "chat", Text: "startup of hock2xmpp"})
 	go ownXMPP.Start(client)
 
 	githubHandler := github.NewHandler(client, config.Hooks)
@@ -38,6 +39,8 @@ func main() {
 		Delivery: githubHandler.Deliviery,
 	}
 	http.Handle("/github", handler)
+	circleciHandler := circleci.NewHandler(client, config.Hooks)
+	http.Handle("/circleci", circleciHandler)
 
 	srv := &http.Server{
 		Addr: config.WebserverBind,
@@ -52,6 +55,8 @@ func main() {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	sig := <-sigs
+
+	client.SendHtml(xmpp.Chat{Remote: config.XMPP.StartupNotify, Type: "chat", Text: "stopped of hock2xmpp"})
 
 	srv.Close()
 
