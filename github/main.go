@@ -2,12 +2,14 @@ package github
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 
+	libHTTP "github.com/genofire/golang-lib/http"
 	"github.com/genofire/golang-lib/log"
-	"github.com/genofire/hook2xmpp/config"
 	xmpp "github.com/mattn/go-xmpp"
 
+	"github.com/genofire/hook2xmpp/config"
 	ownXMPP "github.com/genofire/hook2xmpp/xmpp"
 )
 
@@ -30,9 +32,16 @@ func NewHandler(client *xmpp.Client, newHooks []config.Hook) *Handler {
 	}
 }
 
-func (h *Handler) Deliviery(event string, deliveryID string, payloadOrigin interface{}) {
-	msg := PayloadToString(event, payloadOrigin)
-	payload := payloadOrigin.(map[string]interface{})
+func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	var payload map[string]interface{}
+	event := r.Header.Get("X-GitHub-Event")
+
+	if event == "status" {
+		return
+	}
+
+	libHTTP.Read(r, &payload)
+	msg := PayloadToString(event, payload)
 	repository := payload["repository"].(map[string]interface{})
 	repoName := repository["full_name"].(string)
 
@@ -42,6 +51,7 @@ func (h *Handler) Deliviery(event string, deliveryID string, payloadOrigin inter
 		return
 	}
 
+	log.Log.WithField("type", "github").Print(msg)
 	ownXMPP.Notify(h.client, hook, msg)
 }
 

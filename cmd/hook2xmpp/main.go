@@ -9,7 +9,6 @@ import (
 
 	"github.com/genofire/golang-lib/log"
 	"github.com/mattn/go-xmpp"
-	"github.com/pierrre/githubhook"
 
 	"github.com/genofire/hook2xmpp/circleci"
 	configuration "github.com/genofire/hook2xmpp/config"
@@ -24,7 +23,17 @@ func main() {
 
 	// load config
 	config := configuration.ReadConfigFile(configFile)
-	client, err := xmpp.NewClientNoTLS(config.XMPP.Host, config.XMPP.Username, config.XMPP.Password, config.XMPP.Debug)
+	options := xmpp.Options{
+		Host:          config.XMPP.Host,
+		User:          config.XMPP.Username,
+		Password:      config.XMPP.Password,
+		NoTLS:         config.XMPP.NoTLS,
+		Debug:         config.XMPP.Debug,
+		Session:       config.XMPP.Session,
+		Status:        config.XMPP.Status,
+		StatusMessage: config.XMPP.StatusMessage,
+	}
+	client, err := options.NewClient()
 	if err != nil {
 		log.Log.Panic(err)
 	}
@@ -34,13 +43,11 @@ func main() {
 	client.SendHtml(xmpp.Chat{Remote: config.XMPP.StartupNotify, Type: "chat", Text: "startup of hock2xmpp"})
 	go ownXMPP.Start(client)
 
-	githubHandler := github.NewHandler(client, config.Hooks)
-	handler := &githubhook.Handler{
-		Delivery: githubHandler.Deliviery,
-	}
-	http.Handle("/github", handler)
 	circleciHandler := circleci.NewHandler(client, config.Hooks)
 	http.Handle("/circleci", circleciHandler)
+
+	githubHandler := github.NewHandler(client, config.Hooks)
+	http.Handle("/github", githubHandler)
 
 	srv := &http.Server{
 		Addr: config.WebserverBind,

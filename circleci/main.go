@@ -33,9 +33,15 @@ func NewHandler(client *xmpp.Client, newHooks []config.Hook) *Handler {
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var payload map[string]interface{}
-	libHTTP.Read(r, &payload)
-	username := payload["username"].(string)
+	var body map[string]interface{}
+	libHTTP.Read(r, &body)
+	payload := body["payload"].(map[string]interface{})
+	username, ok := payload["username"].(string)
+	if !ok {
+		log.Log.Error(r.Body)
+		http.Error(w, fmt.Sprintf("no readable payload"), http.StatusInternalServerError)
+		return
+	}
 	reponame := payload["reponame"].(string)
 	repoFullName := fmt.Sprintf("%s/%s", username, reponame)
 
@@ -46,11 +52,12 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	status := payload["status"].(string)
-	buildNum := payload["build_num"].(int)
+	buildNum := payload["build_num"].(float64)
 	buildURL := payload["build_url"].(string)
-	buildTime := payload["build_time_millis"].(int)
+	buildTime := payload["build_time_millis"].(float64)
 	subject := payload["subject"].(string)
-	msg := fmt.Sprintf("[%s/%s] %s (%dms) - #%d: %s \n%s", username, reponame, status, buildTime, buildNum, subject, buildURL)
+	msg := fmt.Sprintf("[%s/%s] %s (%0.fms) - #%0.f: %s \n%s", username, reponame, status, buildTime, buildNum, subject, buildURL)
 
+	log.Log.WithField("type", "circleci").Print(msg)
 	ownXMPP.Notify(h.client, hook, msg)
 }

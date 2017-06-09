@@ -16,6 +16,10 @@ type Config struct {
 		Username      string `toml:"username"`
 		Password      string `toml:"password"`
 		Debug         bool   `toml:"debug"`
+		NoTLS         bool   `toml:"no_tls"`
+		Session       bool   `toml:"session"`
+		Status        string `toml:"status"`
+		StatusMessage string `toml:"status_message"`
 		StartupNotify string `toml:"startup_notify"`
 	} `toml:"xmpp"`
 
