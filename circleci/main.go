@@ -8,8 +8,8 @@ import (
 	"github.com/genofire/golang-lib/log"
 	xmpp "github.com/mattn/go-xmpp"
 
-	"dev.sum7.eu/genofire/hook2xmpp/config"
-	ownXMPP "dev.sum7.eu/genofire/hook2xmpp/xmpp"
+	"github.com/genofire/hook2xmpp/config"
+	ownXMPP "github.com/genofire/hook2xmpp/xmpp"
 )
 
 type Handler struct {
@@ -53,7 +53,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	buildURL := payload["build_url"].(string)
 	buildTime := payload["build_time_millis"].(float64)
 	subject := payload["subject"].(string)
-	msg := fmt.Sprintf("[%s] %s (%0.fms) - #%0.f: %s \n%s", vcsURL, status, buildTime, buildNum, subject, buildURL)
+	msg := fmt.Sprintf("[%s] %s (%0.fs) - #%0.f: %s \n%s", vcsURL, status, buildTime/1000, buildNum, subject, buildURL)
 
 	log.Log.WithField("type", "circleci").Print(msg)
 	ownXMPP.Notify(h.client, hook, msg)

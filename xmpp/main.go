@@ -2,7 +2,7 @@ package xmpp
 
 import (
 	"github.com/genofire/golang-lib/log"
-	"dev.sum7.eu/genofire/hook2xmpp/config"
+	"github.com/genofire/hook2xmpp/config"
 
 	xmpp "github.com/mattn/go-xmpp"
 )

@@ -10,10 +10,10 @@ import (
 	"github.com/genofire/golang-lib/log"
 	"github.com/mattn/go-xmpp"
 
-	"dev.sum7.eu/genofire/hook2xmpp/circleci"
-	configuration "dev.sum7.eu/genofire/hook2xmpp/config"
-	"dev.sum7.eu/genofire/hook2xmpp/git"
-	ownXMPP "dev.sum7.eu/genofire/hook2xmpp/xmpp"
+	"github.com/genofire/hook2xmpp/circleci"
+	configuration "github.com/genofire/hook2xmpp/config"
+	"github.com/genofire/hook2xmpp/git"
+	ownXMPP "github.com/genofire/hook2xmpp/xmpp"
 )
 
 func main() {

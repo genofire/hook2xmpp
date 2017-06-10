@@ -7,8 +7,8 @@ import (
 	"github.com/genofire/golang-lib/log"
 	xmpp "github.com/mattn/go-xmpp"
 
-	"dev.sum7.eu/genofire/hook2xmpp/config"
-	ownXMPP "dev.sum7.eu/genofire/hook2xmpp/xmpp"
+	"github.com/genofire/hook2xmpp/config"
+	ownXMPP "github.com/genofire/hook2xmpp/xmpp"
 )
 
 type Handler struct {
