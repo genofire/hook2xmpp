@@ -1,59 +1,9 @@
-package github
+package git
 
 import (
 	"fmt"
-	"net/http"
 	"strings"
-
-	libHTTP "github.com/genofire/golang-lib/http"
-	"github.com/genofire/golang-lib/log"
-	xmpp "github.com/mattn/go-xmpp"
-
-	"github.com/genofire/hook2xmpp/config"
-	ownXMPP "github.com/genofire/hook2xmpp/xmpp"
 )
-
-type Handler struct {
-	client *xmpp.Client
-	hooks  map[string]config.Hook
-}
-
-func NewHandler(client *xmpp.Client, newHooks []config.Hook) *Handler {
-	hooks := make(map[string]config.Hook)
-
-	for _, hook := range newHooks {
-		if hook.Type == "github" {
-			hooks[hook.Github.Project] = hook
-		}
-	}
-	return &Handler{
-		client: client,
-		hooks:  hooks,
-	}
-}
-
-func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var payload map[string]interface{}
-	event := r.Header.Get("X-GitHub-Event")
-
-	if event == "status" {
-		return
-	}
-
-	libHTTP.Read(r, &payload)
-	msg := PayloadToString(event, payload)
-	repository := payload["repository"].(map[string]interface{})
-	repoName := repository["full_name"].(string)
-
-	hook, ok := h.hooks[repoName]
-	if !ok {
-		log.Log.Errorf("No hook found for: '%s'", repoName)
-		return
-	}
-
-	log.Log.WithField("type", "github").Print(msg)
-	ownXMPP.Notify(h.client, hook, msg)
-}
 
 var eventMsg = map[string]string{
 	"commit_comment_created": "Commit comment",

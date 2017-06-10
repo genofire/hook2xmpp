@@ -10,10 +10,10 @@ import (
 	"github.com/genofire/golang-lib/log"
 	"github.com/mattn/go-xmpp"
 
-	"github.com/genofire/hook2xmpp/circleci"
-	configuration "github.com/genofire/hook2xmpp/config"
-	"github.com/genofire/hook2xmpp/github"
-	ownXMPP "github.com/genofire/hook2xmpp/xmpp"
+	"dev.sum7.eu/genofire/hook2xmpp/circleci"
+	configuration "dev.sum7.eu/genofire/hook2xmpp/config"
+	"dev.sum7.eu/genofire/hook2xmpp/git"
+	ownXMPP "dev.sum7.eu/genofire/hook2xmpp/xmpp"
 )
 
 func main() {
@@ -46,8 +46,8 @@ func main() {
 	circleciHandler := circleci.NewHandler(client, config.Hooks)
 	http.Handle("/circleci", circleciHandler)
 
-	githubHandler := github.NewHandler(client, config.Hooks)
-	http.Handle("/github", githubHandler)
+	gitHandler := git.NewHandler(client, config.Hooks)
+	http.Handle("/git", gitHandler)
 
 	srv := &http.Server{
 		Addr: config.WebserverBind,

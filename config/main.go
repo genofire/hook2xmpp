@@ -27,17 +27,10 @@ type Config struct {
 }
 
 type Hook struct {
+	Type       string   `toml:"type"`
+	URL        string   `toml:"url"`
 	NotifyUser []string `toml:"notify_user"`
 	NotifyMuc  []string `toml:"notify_muc"`
-
-	Type   string `toml:"type"`
-	Github struct {
-		Project string `toml:"project"`
-	} `toml:"github"`
-	CircleCI struct {
-		Username string `toml:"username"`
-		Reponame string `toml:"reponame"`
-	} `toml:"circleci"`
 }
 
 func ReadConfigFile(path string) *Config {
