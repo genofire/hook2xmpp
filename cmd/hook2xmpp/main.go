@@ -7,7 +7,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/genofire/golang-lib/log"
+	"github.com/genofire/logmania/log"
+	logmania "github.com/genofire/logmania/log/hook/client"
+	_ "github.com/genofire/logmania/log/hook/output"
 	"github.com/mattn/go-xmpp"
 
 	"github.com/genofire/hook2xmpp/circleci"
@@ -21,8 +23,13 @@ func main() {
 	flag.StringVar(&configFile, "config", configFile, "path of configuration file")
 	flag.Parse()
 
-	// load config
 	config := configuration.ReadConfigFile(configFile)
+
+	if config.Logmania.Enable {
+		logmania.Init(config.Logmania.Address, config.Logmania.Token, log.LogLevel(config.Logmania.Level))
+	}
+
+	// load config
 	options := xmpp.Options{
 		Host:          config.XMPP.Host,
 		User:          config.XMPP.Username,
@@ -35,10 +42,10 @@ func main() {
 	}
 	client, err := options.NewClient()
 	if err != nil {
-		log.Log.Panic(err)
+		log.Panic(err)
 	}
 
-	log.Log.Infof("Started hock2xmpp with %s", client.JID())
+	log.Infof("Started hock2xmpp with %s", client.JID())
 
 	client.SendHtml(xmpp.Chat{Remote: config.XMPP.StartupNotify, Type: "chat", Text: "startup of hock2xmpp"})
 	go ownXMPP.Start(client)
@@ -67,5 +74,5 @@ func main() {
 
 	srv.Close()
 
-	log.Log.Info("received", sig)
+	log.Info("received", sig)
 }

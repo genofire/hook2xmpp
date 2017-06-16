@@ -5,10 +5,17 @@ import (
 
 	"github.com/BurntSushi/toml"
 
-	"github.com/genofire/golang-lib/log"
+	"github.com/genofire/logmania/log"
 )
 
 type Config struct {
+	Logmania struct {
+		Enable  bool   `toml:"enable"`
+		Address string `toml:"address"`
+		Token   string `toml:"token"`
+		Level   int    `toml:"level"`
+	} `toml:"logmania"`
+
 	WebserverBind string `toml:"webserver_bind"`
 
 	XMPP struct {
@@ -37,10 +44,10 @@ func ReadConfigFile(path string) *Config {
 	config := &Config{}
 	file, err := ioutil.ReadFile(path)
 	if err != nil {
-		log.Log.Panic(err)
+		log.Panic(err)
 	}
 	if err := toml.Unmarshal(file, config); err != nil {
-		log.Log.Panic(err)
+		log.Panic(err)
 	}
 
 	return config
