@@ -2,19 +2,17 @@ package config
 
 import (
 	"io/ioutil"
+	"log"
 
 	"github.com/BurntSushi/toml"
-
-	"github.com/genofire/logmania/log"
 )
 
 type Config struct {
-	Logmania struct {
+	Syslog struct {
 		Enable  bool   `toml:"enable"`
+		Type    string `toml:"type"`
 		Address string `toml:"address"`
-		Token   string `toml:"token"`
-		Level   int    `toml:"level"`
-	} `toml:"logmania"`
+	} `toml:"syslog"`
 
 	WebserverBind string `toml:"webserver_bind"`
 

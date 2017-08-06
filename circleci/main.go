@@ -2,10 +2,10 @@ package circleci
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	libHTTP "github.com/genofire/golang-lib/http"
-	"github.com/genofire/logmania/log"
 	xmpp "github.com/mattn/go-xmpp"
 
 	"github.com/genofire/hook2xmpp/config"
@@ -37,14 +37,14 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	payload := body["payload"].(map[string]interface{})
 	vcsURL, ok := payload["vcs_url"].(string)
 	if !ok {
-		log.Error(r.Body)
+		log.Fatal("no readable payload")
 		http.Error(w, fmt.Sprintf("no readable payload"), http.StatusInternalServerError)
 		return
 	}
 
 	hook, ok := h.hooks[vcsURL]
 	if !ok {
-		log.Errorf("No hook found for: '%s'", vcsURL)
+		log.Fatalf("No hook found for: '%s'", vcsURL)
 		http.Error(w, fmt.Sprintf("no configuration for circleci for url %s", vcsURL), http.StatusNotFound)
 		return
 	}
@@ -55,6 +55,6 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	subject := payload["subject"].(string)
 	msg := fmt.Sprintf("[%s] %s (%0.fs) - #%0.f: %s \n%s", vcsURL, status, buildTime/1000, buildNum, subject, buildURL)
 
-	log.New().AddField("type", "circleci").Info(msg)
+	log.Printf("circle ci: %s", msg)
 	ownXMPP.Notify(h.client, hook, msg)
 }

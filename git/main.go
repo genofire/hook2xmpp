@@ -1,10 +1,10 @@
 package git
 
 import (
+	"log"
 	"net/http"
 
 	libHTTP "github.com/genofire/golang-lib/http"
-	"github.com/genofire/logmania/log"
 	xmpp "github.com/mattn/go-xmpp"
 
 	"github.com/genofire/hook2xmpp/config"
@@ -54,10 +54,10 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	hook, ok := h.hooks[url]
 	if !ok {
-		log.Errorf("No hook found for: '%s'", url)
+		log.Fatalf("No hook found for: '%s'", url)
 		return
 	}
 
-	log.New().AddField("type", "git").Info(msg)
+	log.Printf("git: %s", msg)
 	ownXMPP.Notify(h.client, hook, msg)
 }

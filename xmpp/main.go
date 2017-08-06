@@ -1,8 +1,9 @@
 package xmpp
 
 import (
+	"log"
+
 	"github.com/genofire/hook2xmpp/config"
-	"github.com/genofire/logmania/log"
 
 	xmpp "github.com/mattn/go-xmpp"
 )
@@ -16,7 +17,7 @@ func Start(client *xmpp.Client) {
 		switch v := m.(type) {
 		case xmpp.Chat:
 			if v.Type == "chat" {
-				log.Infof("from %s: %s", v.Remote, v.Text)
+				log.Printf("from %s: %s", v.Remote, v.Text)
 			}
 			if v.Type == "groupchat" {
 			}
