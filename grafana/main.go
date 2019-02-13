@@ -58,6 +58,7 @@ func init() {
 			logger = logger.WithFields(map[string]interface{}{
 				"url": request.RuleURL,
 				"msg": request.String(),
+				"image": request.ImageURL,
 			})
 
 			ruleURL, err := url.Parse(request.RuleURL)
@@ -72,10 +73,11 @@ func init() {
 				if ruleURL.Hostname() != hook.URL {
 					continue
 				}
+
 				runtime.Notify(client, hook, request.String())
 				if request.ImageURL != "" {
-					logger = logger.WithField("image", request.ImageURL)
-					runtime.NotifyImage(client, hook, request.ImageURL)
+					runtime.NotifyImage(client, hook, request.ImageURL, request.String())
+				}else{
 				}
 				logger.Infof("run hook")
 				ok = true

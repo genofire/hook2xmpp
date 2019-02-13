@@ -87,9 +87,9 @@ func main() {
 		}
 	}
 
+	log.Infof("started hock2xmpp with %s", client.JID())
 	notify("startup of hock2xmpp")
 
-	log.Infof("started hock2xmpp with %s", client.JID())
 
 	// Wait for system signal
 	sigs := make(chan os.Signal, 1)

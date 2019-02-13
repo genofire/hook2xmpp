@@ -25,13 +25,14 @@ func Start(client *xmpp.Client) {
 		}
 	}
 }
-func NotifyImage(client *xmpp.Client, hook Hook, url string) {
+func NotifyImage(client *xmpp.Client, hook Hook, url string, desc string) {
 	msg := fmt.Sprintf(`<message to='%%s' type='%%s'>
 		<body>%s</body>
 		<x xmlns='jabber:x:oob'>
 			<url>%s</url>
+			<desc>%s</desc>
 		</x>
-	</message>`, url, url)
+	</message>`, url, url, desc)
 
 	for _, muc := range hook.NotifyMuc {
 		client.SendOrg(fmt.Sprintf(msg, muc, "groupchat"))
