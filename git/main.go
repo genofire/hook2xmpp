@@ -2,9 +2,10 @@ package git
 
 import (
 	"fmt"
-	"log"
+
 	"net/http"
 
+	"github.com/bdlm/log"
 	libHTTP "github.com/genofire/golang-lib/http"
 	xmpp "github.com/mattn/go-xmpp"
 
@@ -13,10 +14,13 @@ import (
 
 var eventHeader = []string{"X-GitHub-Event", "X-Gogs-Event"}
 
+const hookType = "git"
+
 func init() {
-	runtime.HookRegister["git"] = func(client *xmpp.Client, hooks []runtime.Hook) func(w http.ResponseWriter, r *http.Request) {
+	runtime.HookRegister[hookType] = func(client *xmpp.Client, hooks []runtime.Hook) func(w http.ResponseWriter, r *http.Request) {
 		return func(w http.ResponseWriter, r *http.Request) {
-			var payload map[string]interface{}
+			logger := log.WithField("type", hookType)
+
 			event := ""
 			for _, head := range eventHeader {
 				event = r.Header.Get(head)
@@ -30,23 +34,33 @@ func init() {
 				return
 			}
 
-			libHTTP.Read(r, &payload)
-			msg := PayloadToString(event, payload)
-			repository := payload["repository"].(map[string]interface{})
-			url := repository["html_url"].(string)
+			var body map[string]interface{}
+			libHTTP.Read(r, &body)
 
-			ok := false
+			repository := body["repository"].(map[string]interface{})
+			url, ok := repository["html_url"].(string)
+			if !ok {
+				logger.Error("no readable payload")
+				http.Error(w, fmt.Sprintf("no readable payload"), http.StatusInternalServerError)
+				return
+			}
+			logger = logger.WithField("url", url)
+
+			msg := PayloadToString(event, body)
+			logger = logger.WithField("msg", msg)
+
+			ok = false
 			for _, hook := range hooks {
 				if url != hook.URL {
 					continue
 				}
-				log.Printf("run hook for git: %s", msg)
+				logger.Infof("run hook")
 				runtime.Notify(client, hook, msg)
 				ok = true
 			}
 			if !ok {
-				log.Fatalf("No hook found for: '%s'", url)
-				http.Error(w, fmt.Sprintf("no configuration for git for url %s", url), http.StatusNotFound)
+				logger.Warnf("no hook found")
+				http.Error(w, fmt.Sprintf("no configuration for git for url: %s", url), http.StatusNotFound)
 			}
 		}
 	}

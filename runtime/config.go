@@ -12,8 +12,9 @@ type Config struct {
 		Session       bool   `toml:"session"`
 		Status        string `toml:"status"`
 		StatusMessage string `toml:"status_message"`
-		StartupNotify string `toml:"startup_notify"`
 	} `toml:"xmpp"`
+	
+	Nickname string `toml:"nickname"`
 
 	StartupNotifyUser []string `toml:"startup_notify_user"`
 	StartupNotifyMuc  []string `toml:"startup_notify_muc"`

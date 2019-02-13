@@ -2,8 +2,8 @@ package runtime
 
 import (
 	"fmt"
-	"log"
 
+	"github.com/bdlm/log"
 	xmpp "github.com/mattn/go-xmpp"
 )
 
@@ -16,7 +16,7 @@ func Start(client *xmpp.Client) {
 		switch v := m.(type) {
 		case xmpp.Chat:
 			if v.Type == "chat" {
-				log.Printf("from %s: %s", v.Remote, v.Text)
+				log.Debugf("from %s: %s", v.Remote, v.Text)
 			}
 			if v.Type == "groupchat" {
 			}

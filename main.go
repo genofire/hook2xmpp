@@ -2,15 +2,14 @@ package main
 
 import (
 	"flag"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/mattn/go-xmpp"
-
 	"dev.sum7.eu/genofire/golang-lib/file"
+	"github.com/bdlm/log"
+	"github.com/mattn/go-xmpp"
 
 	_ "dev.sum7.eu/genofire/hook2xmpp/circleci"
 	_ "dev.sum7.eu/genofire/hook2xmpp/git"
@@ -41,12 +40,9 @@ func main() {
 	}
 	client, err := options.NewClient()
 	if err != nil {
-		log.Panic(err)
+		log.Panicf("error on startup xmpp client: %s",err)
 	}
 
-	log.Printf("Started hock2xmpp with %s", client.JID())
-
-	client.SendHtml(xmpp.Chat{Remote: config.XMPP.StartupNotify, Type: "chat", Text: "startup of hock2xmpp"})
 	go runtime.Start(client)
 
 	for hookType, getHandler := range runtime.HookRegister {
@@ -65,14 +61,46 @@ func main() {
 		}
 	}()
 
+	var mucs []string
+	for _, muc := range config.StartupNotifyMuc {
+		mucs = append(mucs, muc)
+		client.JoinMUCNoHistory(muc, config.Nickname)
+	}
+	for _, hooks := range config.Hooks {
+		for _, hook := range hooks {
+			for _, muc := range hook.NotifyMuc {
+				mucs = append(mucs, muc)
+				client.JoinMUCNoHistory(muc, config.Nickname)
+			}
+		}
+	}
+
+	notify := func (msg string) {
+		for _, muc := range config.StartupNotifyMuc {
+			client.SendHtml(xmpp.Chat{Remote: muc, Type: "groupchat", Text: msg})
+		}
+		for _, user := range config.StartupNotifyUser {
+			client.SendHtml(xmpp.Chat{Remote: user, Type: "chat", Text: msg})
+		}
+	}
+
+	notify("startup of hock2xmpp")
+
+	log.Infof("started hock2xmpp with %s", client.JID())
+
 	// Wait for system signal
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	sig := <-sigs
 
-	client.SendHtml(xmpp.Chat{Remote: config.XMPP.StartupNotify, Type: "chat", Text: "stopped of hock2xmpp"})
+	notify("stopped of hock2xmpp")
+	
+	for _, muc := range mucs {
+		client.LeaveMUC(muc)
+	}
 
 	srv.Close()
+	client.Close()
 
-	log.Print("received", sig)
+	log.Infof("closed by receiving: %s", sig)
 }
