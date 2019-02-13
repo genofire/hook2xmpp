@@ -35,7 +35,7 @@ type requestBody struct {
 func (r requestBody) String() string {
 	msg := fmt.Sprintf("%s: %s", r.Title, r.Message)
 	for _, e := range r.EvalMatches {
-		msg = fmt.Sprintf("%s %s=%d", msg, e.Metric, e.Value)
+		msg = fmt.Sprintf("%s %s=%f", msg, e.Metric, e.Value)
 	}
 	return msg
 }
