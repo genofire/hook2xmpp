@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/bdlm/log"
+	"github.com/mitchellh/mapstructure"
 	libHTTP "github.com/genofire/golang-lib/http"
 	xmpp "github.com/mattn/go-xmpp"
 
@@ -37,30 +38,29 @@ func init() {
 			var body map[string]interface{}
 			libHTTP.Read(r, &body)
 
-			repository := body["repository"].(map[string]interface{})
-			url, ok := repository["html_url"].(string)
-			if !ok {
-				logger.Error("no readable payload")
+			var request requestBody
+			if err := mapstructure.Decode(body, &request); err != nil {
+				logger.Errorf("no readable payload: %s", err)
 				http.Error(w, fmt.Sprintf("no readable payload"), http.StatusInternalServerError)
 				return
 			}
-			logger = logger.WithField("url", url)
+			logger = logger.WithFields(map[string]interface{}{
+				"url": request.Repository.HTMLURL,
+				"msg": request.String(event),
+			})
 
-			msg := PayloadToString(event, body)
-			logger = logger.WithField("msg", msg)
-
-			ok = false
+			ok := false
 			for _, hook := range hooks {
-				if url != hook.URL {
+				if request.Repository.HTMLURL != hook.URL {
 					continue
 				}
 				logger.Infof("run hook")
-				runtime.Notify(client, hook, msg)
+				runtime.Notify(client, hook, request.String(event))
 				ok = true
 			}
 			if !ok {
 				logger.Warnf("no hook found")
-				http.Error(w, fmt.Sprintf("no configuration for git for url: %s", url), http.StatusNotFound)
+				http.Error(w, fmt.Sprintf("no configuration for %s for url: %s", hookType, request.Repository.HTMLURL), http.StatusNotFound)
 			}
 		}
 	}

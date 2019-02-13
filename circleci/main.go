@@ -6,51 +6,62 @@ import (
 	"net/http"
 
 	"github.com/bdlm/log"
+	"github.com/mitchellh/mapstructure"
 	libHTTP "github.com/genofire/golang-lib/http"
 	xmpp "github.com/mattn/go-xmpp"
 
 	"dev.sum7.eu/genofire/hook2xmpp/runtime"
 )
 
-const hookType = "git"
+const hookType = "circleci"
+
+
+type requestBody struct {
+	Payload struct {
+		VCSURL    string  `mapstructure:"vcs_url"`
+		Status    string  `mapstructure:"status"`
+		BuildNum  float64 `mapstructure:"build_num"`
+		BuildURL  string  `mapstructure:"build_url"`
+		BuildTime float64 `mapstructure:"build_time_millis"`
+		Subject   string  `mapstructure:"subject"`
+	} `mapstructure:"payload"`
+}
+
+func (r requestBody) String() string {
+	return fmt.Sprintf("#%0.f (%0.fs): %s", r.Payload.BuildNum, r.Payload.BuildTime/1000, r.Payload.Subject)
+}
 
 func init() {
 	runtime.HookRegister[hookType] = func(client *xmpp.Client, hooks []runtime.Hook) func(w http.ResponseWriter, r *http.Request) {
 		return func(w http.ResponseWriter, r *http.Request) {
 			logger := log.WithField("type", hookType)
 
-			var body map[string]interface{}
+			var body interface{}
 			libHTTP.Read(r, &body)
 
-			payload := body["payload"].(map[string]interface{})
-			url, ok := payload["vcs_url"].(string)
-			if !ok {
-				logger.Error("no readable payload")
+			var request requestBody
+			if err := mapstructure.Decode(body, &request); err != nil {
+				logger.Errorf("no readable payload: %s", err)
 				http.Error(w, fmt.Sprintf("no readable payload"), http.StatusInternalServerError)
 				return
 			}
-			logger = logger.WithField("url", url)
+			logger = logger.WithFields(map[string]interface{}{
+				"url": request.Payload.VCSURL,
+				"msg": request.String(),
+			})
 
-			status := payload["status"].(string)
-			buildNum := payload["build_num"].(float64)
-			buildURL := payload["build_url"].(string)
-			buildTime := payload["build_time_millis"].(float64)
-			subject := payload["subject"].(string)
-			msg := fmt.Sprintf("[%s] %s (%0.fs) - #%0.f: %s \n%s", url, status, buildTime/1000, buildNum, subject, buildURL)
-			logger = logger.WithField("msg", msg)
-
-			ok = false
+			ok := false
 			for _, hook := range hooks {
-				if url != hook.URL {
+				if request.Payload.VCSURL != hook.URL {
 					continue
 				}
 				logger.Infof("run hook")
-				runtime.Notify(client, hook, msg)
+				runtime.Notify(client, hook, request.String())
 				ok = true
 			}
 			if !ok {
 				logger.Warnf("no hook found")
-				http.Error(w, fmt.Sprintf("no configuration for circleci for url: %s", url), http.StatusNotFound)
+				http.Error(w, fmt.Sprintf("no configuration for %s for url: %s", hookType, request.Payload.VCSURL), http.StatusNotFound)
 			}
 		}
 	}

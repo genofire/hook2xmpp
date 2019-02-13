@@ -49,38 +49,57 @@ var eventMsg = map[string]string{
 	"gollum_edited":          "Wiki: edited page",
 }
 
-func PayloadToString(event string, payloadOrigin interface{}) string {
-	payload := payloadOrigin.(map[string]interface{})
 
-	repository := payload["repository"].(map[string]interface{})
-	repoName := repository["full_name"].(string)
+type requestBody struct {
+	Repository struct {
+		HTMLURL  string `mapstructure:"html_url"`
+		FullName string `mapstructure:"full_name"`
+	} `mapstructure:"repository"`
+	//push
+	Pusher struct {
+		Name string `mapstructure:"name"`
+	} `mapstructure:"pusher"`
+	Commits []struct {
+		Added    []interface{} `mapstructure:"added"`
+		Removed  []interface{} `mapstructure:"removed"`
+		Modified []interface{} `mapstructure:"modified"`
+	} `mapstructure:"commits"`
+	Compare string `mapstructure:"compare"`
+	Ref     string `mapstructure:"ref"`
+	// issue + fallback
+	Sender struct {
+		Login string `mapstructure:"login"`
+	} `mapstructure:"sender"`
+	// issue
+	Action string `mapstructure:"action"`
+	Issue  struct {
+		HTMLURL string  `mapstructure:"html_url"`
+		Number  float64 `mapstructure:"number"`
+		Title   string  `mapstructure:"title"`
+	} `mapstructure:"issue"`
+}
 
-	msg := fmt.Sprintf("[%s]", repoName)
+func (r requestBody) String(event string) string {
+	msg := fmt.Sprintf("[%s]", r.Repository.FullName)
 
 	if event == "push" {
-		pusher := payload["pusher"].(map[string]interface{})
-		commits := payload["commits"].([]interface{})
 		added := 0
 		removed := 0
 		modified := 0
-		for _, commitOrigin := range commits {
-			commit := commitOrigin.(map[string]interface{})
-			added += len(commit["added"].([]interface{}))
-			removed += len(commit["removed"].([]interface{}))
-			modified += len(commit["modified"].([]interface{}))
+		for _, commit := range r.Commits {
+			added += len(commit.Added)
+			removed += len(commit.Removed)
+			modified += len(commit.Modified)
 		}
-		msg = fmt.Sprintf("%s %s - pushed %d commit(s) to %s [+%d/-%d/\u00B1%d] \n %s", msg, pusher["name"], len(commits), strings.TrimLeft(payload["ref"].(string), "refs/heads/"), added, removed, modified, payload["compare"])
+		msg = fmt.Sprintf("%s %s - pushed %d commit(s) to %s [+%d/-%d/\u00B1%d]: %s", msg, r.Pusher.Name, len(r.Commits), strings.TrimLeft(r.Ref, "refs/heads/"), added, removed, modified, r.Compare)
 	} else if event == "issues" || event == "issue_comment" {
-		sender := payload["sender"].(map[string]interface{})
-		issue := payload["issue"].(map[string]interface{})
-		msg = fmt.Sprintf("%s %s - %s action #%.0f: %s \n %s", msg, sender["login"], payload["action"], issue["number"], issue["title"], issue["html_url"])
+		msg = fmt.Sprintf("%s %s - %s action #%.0f: %s - %s", msg, r.Sender.Login, r.Action, r.Issue.Number, r.Issue.Title, r.Issue.HTMLURL)
 	} else {
-		sender := payload["sender"].(map[string]interface{})
 		text := eventMsg[event]
 		if text == "" {
 			text = event
 		}
-		msg = fmt.Sprintf("%s %s - %s", msg, sender["login"], text)
+		msg = fmt.Sprintf("%s %s - %s", msg, r.Sender.Login, text)
 	}
 	return msg
 }
