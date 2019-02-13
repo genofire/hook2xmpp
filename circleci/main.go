@@ -6,15 +6,14 @@ import (
 	"net/http"
 
 	"github.com/bdlm/log"
-	"github.com/mitchellh/mapstructure"
 	libHTTP "github.com/genofire/golang-lib/http"
 	xmpp "github.com/mattn/go-xmpp"
+	"github.com/mitchellh/mapstructure"
 
 	"dev.sum7.eu/genofire/hook2xmpp/runtime"
 )
 
 const hookType = "circleci"
-
 
 type requestBody struct {
 	Payload struct {
@@ -33,6 +32,7 @@ func (r requestBody) String() string {
 
 func init() {
 	runtime.HookRegister[hookType] = func(client *xmpp.Client, hooks []runtime.Hook) func(w http.ResponseWriter, r *http.Request) {
+		log.WithField("type", hookType).Info("loaded")
 		return func(w http.ResponseWriter, r *http.Request) {
 			logger := log.WithField("type", hookType)
 

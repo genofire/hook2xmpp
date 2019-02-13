@@ -49,9 +49,9 @@ var eventMsg = map[string]string{
 	"gollum_edited":          "Wiki: edited page",
 }
 
-
 type requestBody struct {
 	Repository struct {
+		URL  string `mapstructure:"url"`
 		HTMLURL  string `mapstructure:"html_url"`
 		FullName string `mapstructure:"full_name"`
 	} `mapstructure:"repository"`

@@ -13,6 +13,7 @@ import (
 
 	_ "dev.sum7.eu/genofire/hook2xmpp/circleci"
 	_ "dev.sum7.eu/genofire/hook2xmpp/git"
+	_ "dev.sum7.eu/genofire/hook2xmpp/grafana"
 	"dev.sum7.eu/genofire/hook2xmpp/runtime"
 )
 
@@ -31,7 +32,9 @@ func main() {
 	options := xmpp.Options{
 		Host:          config.XMPP.Host,
 		User:          config.XMPP.Username,
+		Resource:      config.XMPP.Resource,
 		Password:      config.XMPP.Password,
+		StartTLS:      config.XMPP.StartTLS,
 		NoTLS:         config.XMPP.NoTLS,
 		Debug:         config.XMPP.Debug,
 		Session:       config.XMPP.Session,
@@ -40,7 +43,7 @@ func main() {
 	}
 	client, err := options.NewClient()
 	if err != nil {
-		log.Panicf("error on startup xmpp client: %s",err)
+		log.Panicf("error on startup xmpp client: %s", err)
 	}
 
 	go runtime.Start(client)
@@ -48,7 +51,7 @@ func main() {
 	for hookType, getHandler := range runtime.HookRegister {
 		hooks, ok := config.Hooks[hookType]
 		if ok {
-			http.HandleFunc(hookType, getHandler(client, hooks))
+			http.HandleFunc("/"+hookType, getHandler(client, hooks))
 		}
 	}
 
@@ -75,7 +78,7 @@ func main() {
 		}
 	}
 
-	notify := func (msg string) {
+	notify := func(msg string) {
 		for _, muc := range config.StartupNotifyMuc {
 			client.SendHtml(xmpp.Chat{Remote: muc, Type: "groupchat", Text: msg})
 		}
@@ -94,7 +97,7 @@ func main() {
 	sig := <-sigs
 
 	notify("stopped of hock2xmpp")
-	
+
 	for _, muc := range mucs {
 		client.LeaveMUC(muc)
 	}

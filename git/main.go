@@ -6,19 +6,20 @@ import (
 	"net/http"
 
 	"github.com/bdlm/log"
-	"github.com/mitchellh/mapstructure"
 	libHTTP "github.com/genofire/golang-lib/http"
 	xmpp "github.com/mattn/go-xmpp"
+	"github.com/mitchellh/mapstructure"
 
 	"dev.sum7.eu/genofire/hook2xmpp/runtime"
 )
 
-var eventHeader = []string{"X-GitHub-Event", "X-Gogs-Event"}
+var eventHeader = []string{"X-GitHub-Event", "X-Gogs-Event", "X-Gitlab-Event"}
 
 const hookType = "git"
 
 func init() {
 	runtime.HookRegister[hookType] = func(client *xmpp.Client, hooks []runtime.Hook) func(w http.ResponseWriter, r *http.Request) {
+		log.WithField("type", hookType).Info("loaded")
 		return func(w http.ResponseWriter, r *http.Request) {
 			logger := log.WithField("type", hookType)
 
@@ -31,7 +32,7 @@ func init() {
 				}
 			}
 
-			if event == "status" {
+			if event == "" || event == "status" {
 				return
 			}
 
@@ -45,13 +46,13 @@ func init() {
 				return
 			}
 			logger = logger.WithFields(map[string]interface{}{
-				"url": request.Repository.HTMLURL,
+				"url": request.Repository.URL,
 				"msg": request.String(event),
 			})
 
 			ok := false
 			for _, hook := range hooks {
-				if request.Repository.HTMLURL != hook.URL {
+				if request.Repository.URL != hook.URL {
 					continue
 				}
 				logger.Infof("run hook")
@@ -60,7 +61,7 @@ func init() {
 			}
 			if !ok {
 				logger.Warnf("no hook found")
-				http.Error(w, fmt.Sprintf("no configuration for %s for url: %s", hookType, request.Repository.HTMLURL), http.StatusNotFound)
+				http.Error(w, fmt.Sprintf("no configuration for %s for url: %s", hookType, request.Repository.URL), http.StatusNotFound)
 			}
 		}
 	}
