@@ -1,63 +1,53 @@
 package git
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
 	libHTTP "github.com/genofire/golang-lib/http"
 	xmpp "github.com/mattn/go-xmpp"
 
-	"github.com/genofire/hook2xmpp/config"
-	ownXMPP "github.com/genofire/hook2xmpp/xmpp"
+	"dev.sum7.eu/genofire/hook2xmpp/runtime"
 )
-
-type Handler struct {
-	client *xmpp.Client
-	hooks  map[string]config.Hook
-}
-
-func NewHandler(client *xmpp.Client, newHooks []config.Hook) *Handler {
-	hooks := make(map[string]config.Hook)
-
-	for _, hook := range newHooks {
-		if hook.Type == "git" {
-			hooks[hook.URL] = hook
-		}
-	}
-	return &Handler{
-		client: client,
-		hooks:  hooks,
-	}
-}
 
 var eventHeader = []string{"X-GitHub-Event", "X-Gogs-Event"}
 
-func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var payload map[string]interface{}
-	event := ""
-	for _, head := range eventHeader {
-		event = r.Header.Get(head)
+func init() {
+	runtime.HookRegister["git"] = func(client *xmpp.Client, hooks []runtime.Hook) func(w http.ResponseWriter, r *http.Request) {
+		return func(w http.ResponseWriter, r *http.Request) {
+			var payload map[string]interface{}
+			event := ""
+			for _, head := range eventHeader {
+				event = r.Header.Get(head)
 
-		if event != "" {
-			break
+				if event != "" {
+					break
+				}
+			}
+
+			if event == "status" {
+				return
+			}
+
+			libHTTP.Read(r, &payload)
+			msg := PayloadToString(event, payload)
+			repository := payload["repository"].(map[string]interface{})
+			url := repository["html_url"].(string)
+
+			ok := false
+			for _, hook := range hooks {
+				if url != hook.URL {
+					continue
+				}
+				log.Printf("run hook for git: %s", msg)
+				runtime.Notify(client, hook, msg)
+				ok = true
+			}
+			if !ok {
+				log.Fatalf("No hook found for: '%s'", url)
+				http.Error(w, fmt.Sprintf("no configuration for git for url %s", url), http.StatusNotFound)
+			}
 		}
 	}
-
-	if event == "status" {
-		return
-	}
-
-	libHTTP.Read(r, &payload)
-	msg := PayloadToString(event, payload)
-	repository := payload["repository"].(map[string]interface{})
-	url := repository["html_url"].(string)
-
-	hook, ok := h.hooks[url]
-	if !ok {
-		log.Fatalf("No hook found for: '%s'", url)
-		return
-	}
-
-	log.Printf("git: %s", msg)
-	ownXMPP.Notify(h.client, hook, msg)
 }

@@ -10,11 +10,11 @@ import (
 
 	"github.com/mattn/go-xmpp"
 
-	"github.com/genofire/hook2xmpp/circleci"
-	configuration "github.com/genofire/hook2xmpp/config"
-	"github.com/genofire/hook2xmpp/git"
-	"github.com/genofire/hook2xmpp/syslog"
-	ownXMPP "github.com/genofire/hook2xmpp/xmpp"
+	"dev.sum7.eu/genofire/golang-lib/file"
+
+	_ "dev.sum7.eu/genofire/hook2xmpp/circleci"
+	_ "dev.sum7.eu/genofire/hook2xmpp/git"
+	"dev.sum7.eu/genofire/hook2xmpp/runtime"
 )
 
 func main() {
@@ -22,10 +22,10 @@ func main() {
 	flag.StringVar(&configFile, "config", configFile, "path of configuration file")
 	flag.Parse()
 
-	config := configuration.ReadConfigFile(configFile)
+	config := &runtime.Config{}
 
-	if config.Syslog.Enable {
-		syslog.Bind(config)
+	if err := file.ReadTOML(configFile, config); err != nil {
+		log.Panicf("error on read config: %s", err)
 	}
 
 	// load config
@@ -47,13 +47,14 @@ func main() {
 	log.Printf("Started hock2xmpp with %s", client.JID())
 
 	client.SendHtml(xmpp.Chat{Remote: config.XMPP.StartupNotify, Type: "chat", Text: "startup of hock2xmpp"})
-	go ownXMPP.Start(client)
+	go runtime.Start(client)
 
-	circleciHandler := circleci.NewHandler(client, config.Hooks)
-	http.Handle("/circleci", circleciHandler)
-
-	gitHandler := git.NewHandler(client, config.Hooks)
-	http.Handle("/git", gitHandler)
+	for hookType, getHandler := range runtime.HookRegister {
+		hooks, ok := config.Hooks[hookType]
+		if ok {
+			http.HandleFunc(hookType, getHandler(client, hooks))
+		}
+	}
 
 	srv := &http.Server{
 		Addr: config.WebserverBind,

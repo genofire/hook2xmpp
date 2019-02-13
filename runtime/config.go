@@ -1,19 +1,6 @@
-package config
-
-import (
-	"io/ioutil"
-	"log"
-
-	"github.com/BurntSushi/toml"
-)
+package runtime
 
 type Config struct {
-	Syslog struct {
-		Enable  bool   `toml:"enable"`
-		Type    string `toml:"type"`
-		Address string `toml:"address"`
-	} `toml:"syslog"`
-
 	WebserverBind string `toml:"webserver_bind"`
 
 	XMPP struct {
@@ -28,25 +15,14 @@ type Config struct {
 		StartupNotify string `toml:"startup_notify"`
 	} `toml:"xmpp"`
 
-	Hooks []Hook `toml:"hooks"`
+	StartupNotifyUser []string `toml:"startup_notify_user"`
+	StartupNotifyMuc  []string `toml:"startup_notify_muc"`
+
+	Hooks map[string][]Hook `toml:"hooks"`
 }
 
 type Hook struct {
-	Type       string   `toml:"type"`
 	URL        string   `toml:"url"`
 	NotifyUser []string `toml:"notify_user"`
 	NotifyMuc  []string `toml:"notify_muc"`
-}
-
-func ReadConfigFile(path string) *Config {
-	config := &Config{}
-	file, err := ioutil.ReadFile(path)
-	if err != nil {
-		log.Panic(err)
-	}
-	if err := toml.Unmarshal(file, config); err != nil {
-		log.Panic(err)
-	}
-
-	return config
 }

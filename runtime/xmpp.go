@@ -1,9 +1,8 @@
-package xmpp
+package runtime
 
 import (
+	"fmt"
 	"log"
-
-	"github.com/genofire/hook2xmpp/config"
 
 	xmpp "github.com/mattn/go-xmpp"
 )
@@ -26,8 +25,22 @@ func Start(client *xmpp.Client) {
 		}
 	}
 }
+func NotifyImage(client *xmpp.Client, hook Hook, url string) {
+	msg := fmt.Sprintf(`<message to='%%s' type='%%s'>
+		<body>%s</body>
+		<x xmlns='jabber:x:oob'>
+			<url>%s</url>
+		</x>
+	</message>`, url, url)
 
-func Notify(client *xmpp.Client, hook config.Hook, msg string) {
+	for _, muc := range hook.NotifyMuc {
+		client.SendOrg(fmt.Sprintf(msg, muc, "groupchat"))
+	}
+	for _, user := range hook.NotifyUser {
+		client.SendOrg(fmt.Sprintf(msg, user, "chat"))
+	}
+}
+func Notify(client *xmpp.Client, hook Hook, msg string) {
 	for _, muc := range hook.NotifyMuc {
 		client.SendHtml(xmpp.Chat{Remote: muc, Type: "groupchat", Text: msg})
 	}
