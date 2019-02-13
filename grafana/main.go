@@ -74,7 +74,9 @@ func init() {
 				}
 				logger.Infof("run hook")
 				runtime.Notify(client, hook, request.String())
-				runtime.NotifyImage(client, hook, request.ImageURL)
+				if request.ImageURL != "" {
+				    runtime.NotifyImage(client, hook, request.ImageURL)
+				}
 				ok = true
 			}
 			if !ok {
