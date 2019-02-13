@@ -51,7 +51,7 @@ var eventMsg = map[string]string{
 
 type requestBody struct {
 	Repository struct {
-		URL  string `mapstructure:"url"`
+		URL      string `mapstructure:"url"`
 		HTMLURL  string `mapstructure:"html_url"`
 		FullName string `mapstructure:"full_name"`
 	} `mapstructure:"repository"`

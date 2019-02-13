@@ -72,11 +72,12 @@ func init() {
 				if ruleURL.Hostname() != hook.URL {
 					continue
 				}
-				logger.Infof("run hook")
 				runtime.Notify(client, hook, request.String())
 				if request.ImageURL != "" {
-				    runtime.NotifyImage(client, hook, request.ImageURL)
+					logger = logger.WithField("image", request.ImageURL)
+					runtime.NotifyImage(client, hook, request.ImageURL)
 				}
+				logger.Infof("run hook")
 				ok = true
 			}
 			if !ok {
