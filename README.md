@@ -10,7 +10,7 @@
 
 Latest Build binary from ci here:
 
-[Download](https://dev.sum7.eu/genofire/hook2xmpp/-/jobs/artifacts/master/raw/hook2xmpp?inline=false&job=compile)
+[Download](https://dev.sum7.eu/genofire/hook2xmpp/-/jobs/artifacts/master/raw/hook2xmpp?inline=false&job=build-my-project)
 
 #### Build
 
