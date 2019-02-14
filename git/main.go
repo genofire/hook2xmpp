@@ -16,7 +16,6 @@ import (
 var eventHeader = map[string]string{
 	"X-GitHub-Event": "X-Hub-Signature",
 	"X-Gogs-Event":   "X-Gogs-Delivery",
-	"X-Gitlab-Event": "X-Gitlab-Token",
 }
 
 const hookType = "git"

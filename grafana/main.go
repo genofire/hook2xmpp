@@ -7,7 +7,6 @@ import (
 	libHTTP "dev.sum7.eu/genofire/golang-lib/http"
 	"github.com/bdlm/log"
 	xmpp "github.com/mattn/go-xmpp"
-	"github.com/mitchellh/mapstructure"
 
 	"dev.sum7.eu/genofire/hook2xmpp/runtime"
 )
@@ -53,11 +52,8 @@ func init() {
 				return
 			}
 
-			var body interface{}
-			libHTTP.Read(r, &body)
-
 			var request requestBody
-			if err := mapstructure.Decode(body, &request); err != nil {
+			if err := libHTTP.Read(r, &request); err != nil {
 				logger.Errorf("no readable payload: %s", err)
 				http.Error(w, fmt.Sprintf("no readable payload"), http.StatusInternalServerError)
 				return

@@ -13,9 +13,10 @@ build-my-project:
   stage: build
   script:
     - go install dev.sum7.eu/$CI_PROJECT_PATH
+    - mv /go/bin/$CI_PROJECT_NAME /builds/$CI_PROJECT_PATH
   artifacts:
     paths:
-      - /go/bin/$CI_PROJECT_NAME
+      - $CI_PROJECT_NAME
 
 test-my-project:
   stage: test
