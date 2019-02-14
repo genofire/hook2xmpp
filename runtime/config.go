@@ -28,7 +28,7 @@ type Config struct {
 }
 
 type Hook struct {
-	URL        string   `toml:"url"`
+	Secret     string   `toml:"secret"`
 	NotifyUser []string `toml:"notify_user"`
 	NotifyMuc  []string `toml:"notify_muc"`
 }

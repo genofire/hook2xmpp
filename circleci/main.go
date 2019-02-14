@@ -5,8 +5,8 @@ import (
 
 	"net/http"
 
+	libHTTP "dev.sum7.eu/genofire/golang-lib/http"
 	"github.com/bdlm/log"
-	libHTTP "github.com/genofire/golang-lib/http"
 	xmpp "github.com/mattn/go-xmpp"
 	"github.com/mitchellh/mapstructure"
 
@@ -52,7 +52,7 @@ func init() {
 
 			ok := false
 			for _, hook := range hooks {
-				if request.Payload.VCSURL != hook.URL {
+				if request.Payload.VCSURL != hook.Secret {
 					continue
 				}
 				logger.Infof("run hook")

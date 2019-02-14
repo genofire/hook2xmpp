@@ -3,10 +3,9 @@ package grafana
 import (
 	"fmt"
 	"net/http"
-	"net/url"
 
+	libHTTP "dev.sum7.eu/genofire/golang-lib/http"
 	"github.com/bdlm/log"
-	libHTTP "github.com/genofire/golang-lib/http"
 	xmpp "github.com/mattn/go-xmpp"
 	"github.com/mitchellh/mapstructure"
 
@@ -46,6 +45,14 @@ func init() {
 		return func(w http.ResponseWriter, r *http.Request) {
 			logger := log.WithField("type", hookType)
 
+			_, secret, ok := r.BasicAuth()
+
+			if !ok {
+				logger.Errorf("no secret found")
+				http.Error(w, fmt.Sprintf("no secret found (basic-auth password)"), http.StatusUnauthorized)
+				return
+			}
+
 			var body interface{}
 			libHTTP.Read(r, &body)
 
@@ -61,16 +68,9 @@ func init() {
 				"image": request.ImageURL,
 			})
 
-			ruleURL, err := url.Parse(request.RuleURL)
-			if err != nil {
-				logger.Errorf("could not parse ruleURL: %s", err)
-				http.Error(w, fmt.Sprintf("no readable payload"), http.StatusInternalServerError)
-				return
-			}
-
-			ok := false
+			ok = false
 			for _, hook := range hooks {
-				if ruleURL.Hostname() != hook.URL {
+				if secret != hook.Secret {
 					continue
 				}
 

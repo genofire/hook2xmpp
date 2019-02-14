@@ -5,15 +5,19 @@ import (
 
 	"net/http"
 
+	libHTTP "dev.sum7.eu/genofire/golang-lib/http"
 	"github.com/bdlm/log"
-	libHTTP "github.com/genofire/golang-lib/http"
 	xmpp "github.com/mattn/go-xmpp"
 	"github.com/mitchellh/mapstructure"
 
 	"dev.sum7.eu/genofire/hook2xmpp/runtime"
 )
 
-var eventHeader = []string{"X-GitHub-Event", "X-Gogs-Event", "X-Gitlab-Event"}
+var eventHeader = map[string]string{
+	"X-GitHub-Event": "X-Hub-Signature",
+	"X-Gogs-Event":   "X-Gogs-Delivery",
+	"X-Gitlab-Event": "X-Gitlab-Token",
+}
 
 const hookType = "git"
 
@@ -24,20 +28,28 @@ func init() {
 			logger := log.WithField("type", hookType)
 
 			event := ""
-			for _, head := range eventHeader {
+			secret := ""
+			for head, headSecret := range eventHeader {
 				event = r.Header.Get(head)
 
 				if event != "" {
+					secret = r.Header.Get(headSecret)
 					break
 				}
 			}
 
-			if event == "" || event == "status" {
-				return
-			}
-
 			var body map[string]interface{}
 			libHTTP.Read(r, &body)
+
+			if s, ok := body["secret"]; ok && secret == "" {
+				secret = s.(string)
+			}
+
+			if event == "" || secret == "" {
+				logger.Warnf("no secret or event found")
+				http.Error(w, fmt.Sprintf("no secret or event found"), http.StatusNotFound)
+				return
+			}
 
 			var request requestBody
 			if err := mapstructure.Decode(body, &request); err != nil {
@@ -52,7 +64,7 @@ func init() {
 
 			ok := false
 			for _, hook := range hooks {
-				if request.Repository.URL != hook.URL {
+				if secret != hook.Secret {
 					continue
 				}
 				logger.Infof("run hook")
