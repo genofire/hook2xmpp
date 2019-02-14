@@ -16,6 +16,7 @@ build-my-project:
     - mv /go/bin/$CI_PROJECT_NAME /builds/$CI_PROJECT_PATH
   artifacts:
     paths:
+      - config_example.conf
       - $CI_PROJECT_NAME
 
 test-my-project:
