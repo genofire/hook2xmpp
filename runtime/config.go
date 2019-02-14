@@ -1,7 +1,10 @@
 package runtime
 
+import "github.com/bdlm/std/logger"
+
 type Config struct {
-	WebserverBind string `toml:"webserver_bind"`
+	LogLevel      logger.Level `toml:"log_level"`
+	WebserverBind string       `toml:"webserver_bind"`
 
 	XMPP struct {
 		Host          string `toml:"host"`

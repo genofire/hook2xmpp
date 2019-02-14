@@ -1,0 +1,35 @@
+image: golang:latest
+stages:
+  - build
+  - test
+
+before_script:
+  - mkdir -p /go/src/dev.sum7.eu/$CI_PROJECT_NAMESPACE/
+  - cp -R /builds/$CI_PROJECT_PATH /go/src/dev.sum7.eu/$CI_PROJECT_NAMESPACE/
+  - cd /go/src/dev.sum7.eu/$CI_PROJECT_PATH
+  - go get -d -t ./...
+
+build-my-project:
+  stage: build
+  script:
+    - go install dev.sum7.eu/$CI_PROJECT_PATH
+  artifacts:
+    paths:
+      - /go/bin/$CI_PROJECT_NAME
+
+test-my-project:
+  stage: test
+  script:
+    - go get github.com/client9/misspell/cmd/misspell
+    - misspell -error .
+    - ./.ci/check-gofmt
+    - ./.ci/check-testfiles
+    - go test $(go list ./... | grep -v /vendor/) -v -coverprofile .testCoverage.txt
+  artifacts:
+    paths:
+     - .testCoverage.txt
+
+test-race-my-project:
+  stage: test
+  script:
+    - go test -race ./...

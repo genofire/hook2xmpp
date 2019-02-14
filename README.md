@@ -1,1 +1,5 @@
-# hook2xmpp [![CircleCI](https://circleci.com/gh/genofire/hook2xmpp/tree/master.svg?style=shield)](https://circleci.com/gh/genofire/hook2xmpp/tree/master) [![Coverage Status](https://coveralls.io/repos/github/genofire/hook2xmpp/badge.svg?branch=master)](https://coveralls.io/github/genofire/hook2xmpp?branch=master) [![Go Report Card](https://goreportcard.com/badge/github.com/genofire/hook2xmpp)](https://goreportcard.com/report/github.com/genofire/hook2xmpp) [![GoDoc](https://godoc.org/github.com/genofire/hook2xmpp?status.svg)](https://godoc.org/github.com/genofire/hook2xmpp)
+# hook2xmpp
+[![Build Status](https://dev.sum7.eu/genofire/hook2xmpp/badges/master/build.svg)](https://dev.sum7.eu/genofire/hook2xmpp/pipelines)
+[![Go Report Card](https://goreportcard.com/badge/dev.sum7.eu/genofire/hook2xmpp)](https://goreportcard.com/report/dev.sum7.eu/genofire/hook2xmpp)
+[![GoDoc](https://godoc.org/dev.sum7.eu/genofire/hook2xmpp?status.svg)](https://godoc.org/dev.sum7.eu/genofire/hook2xmpp)
+

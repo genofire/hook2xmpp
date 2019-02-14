@@ -28,6 +28,8 @@ func main() {
 		log.Panicf("error on read config: %s", err)
 	}
 
+	log.SetLevel(config.LogLevel)
+
 	// load config
 	options := xmpp.Options{
 		Host:          config.XMPP.Host,
@@ -89,7 +91,6 @@ func main() {
 
 	log.Infof("started hock2xmpp with %s", client.JID())
 	notify("startup of hock2xmpp")
-
 
 	// Wait for system signal
 	sigs := make(chan os.Signal, 1)

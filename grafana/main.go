@@ -1,4 +1,4 @@
-package circleci
+package grafana
 
 import (
 	"fmt"
@@ -56,8 +56,8 @@ func init() {
 				return
 			}
 			logger = logger.WithFields(map[string]interface{}{
-				"url": request.RuleURL,
-				"msg": request.String(),
+				"url":   request.RuleURL,
+				"msg":   request.String(),
 				"image": request.ImageURL,
 			})
 
@@ -77,7 +77,7 @@ func init() {
 				runtime.Notify(client, hook, request.String())
 				if request.ImageURL != "" {
 					runtime.NotifyImage(client, hook, request.ImageURL, request.String())
-				}else{
+				} else {
 				}
 				logger.Infof("run hook")
 				ok = true
