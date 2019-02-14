@@ -26,7 +26,7 @@ func main() {
 	config := &runtime.Config{}
 
 	if err := file.ReadTOML(configFile, config); err != nil {
-		log.Panicf("error on read config: %s", err)
+		log.WithField("tip", "maybe call me with: hook2xmpp--config /etc/hook2xmpp.conf").Panicf("error on read config: %s", err)
 	}
 
 	log.SetLevel(config.LogLevel)
