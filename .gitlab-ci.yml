@@ -2,22 +2,23 @@ image: golang:latest
 stages:
   - build
   - test
+  - deploy
 
 before_script:
-  - mkdir -p /go/src/dev.sum7.eu/$CI_PROJECT_NAMESPACE/
-  - cp -R /builds/$CI_PROJECT_PATH /go/src/dev.sum7.eu/$CI_PROJECT_NAMESPACE/
-  - cd /go/src/dev.sum7.eu/$CI_PROJECT_PATH
+  - mkdir -p "/go/src/dev.sum7.eu/$CI_PROJECT_NAMESPACE/"
+  - cp -R "/builds/$CI_PROJECT_PATH" "/go/src/dev.sum7.eu/$CI_PROJECT_NAMESPACE/"
+  - cd "/go/src/dev.sum7.eu/$CI_PROJECT_PATH"
   - go get -d -t ./...
 
 build-my-project:
   stage: build
   script:
-    - go install dev.sum7.eu/$CI_PROJECT_PATH
-    - mv /go/bin/$CI_PROJECT_NAME /builds/$CI_PROJECT_PATH
+    - go install "dev.sum7.eu/$CI_PROJECT_PATH"
+    - mv "/go/bin/$CI_PROJECT_NAME" "/builds/$CI_PROJECT_PATH"
   artifacts:
     paths:
       - config_example.conf
-      - $CI_PROJECT_NAME
+      - "$CI_PROJECT_NAME"
 
 test-my-project:
   stage: test
@@ -35,3 +36,15 @@ test-race-my-project:
   stage: test
   script:
     - go test -race ./...
+
+deploy:
+  stage: deploy
+  only:
+    - master
+  script:
+    - go install "dev.sum7.eu/$CI_PROJECT_PATH"
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+    - scp -6 -o StrictHostKeyChecking=no -P $SSH_PORT "/go/bin/$CI_PROJECT_NAME" "$CI_PROJECT_NAME@$SSH_HOST":/opt/$CI_PROJECT_NAME/bin
+    - ssh -6 -o StrictHostKeyChecking=no -p $SSH_PORT "$CI_PROJECT_NAME@$SSH_HOST" sudo /usr/bin/systemctl restart $CI_PROJECT_NAME
