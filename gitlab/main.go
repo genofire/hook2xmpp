@@ -1,7 +1,10 @@
 package gitlab
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
 
 	"net/http"
 
@@ -88,6 +91,27 @@ func init() {
 				var pl BuildEventPayload
 				err = libHTTP.Read(r, &pl)
 				msg = pl.String()
+
+			case SystemEvents:
+				var data map[string]interface{}
+				var buf bytes.Buffer
+				tee := io.TeeReader(r.Body, &buf)
+				if err = json.NewDecoder(tee).Decode(&data); err != nil {
+					msg = fmt.Sprintf("unable to decode gitlab system event")
+				} else if event, ok := data["event_name"]; ok {
+					switch event {
+					case "push":
+						var pl PushEventPayload
+						err = json.NewDecoder(&buf).Decode(&pl)
+						msg = fmt.Sprintf("[S]%s", pl.String())
+					default:
+						err = nil
+						msg = fmt.Sprintf("unknown gitlab system event '%s' received", event)
+					}
+				} else {
+					err = nil
+					msg = fmt.Sprintf("unable to get 'event_name' of gitlab '%s'", gitLabEvent)
+				}
 
 			default:
 				err = nil

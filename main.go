@@ -62,7 +62,7 @@ func main() {
 		Addr: config.WebserverBind,
 	}
 	go func() {
-		if err := srv.ListenAndServe(); err != nil {
+		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
 			panic(err)
 		}
 	}()

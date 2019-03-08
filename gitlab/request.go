@@ -19,6 +19,7 @@ const (
 	WikiPageEvents           Event = "Wiki Page Hook"
 	PipelineEvents           Event = "Pipeline Hook"
 	BuildEvents              Event = "Build Hook"
+	SystemEvents             Event = "System Hook"
 )
 
 type customTime struct {
@@ -91,6 +92,7 @@ func (pl *MergeRequestEventPayload) String() string {
 
 // PushEventPayload contains the information for GitLab's push event
 type PushEventPayload struct {
+	EventName         string     `json:"event_name"`
 	ObjectKind        string     `json:"object_kind"`
 	Before            string     `json:"before"`
 	After             string     `json:"after"`
@@ -98,10 +100,11 @@ type PushEventPayload struct {
 	CheckoutSHA       string     `json:"checkout_sha"`
 	UserID            int64      `json:"user_id"`
 	UserName          string     `json:"user_name"`
+	UserUsername      string     `json:"user_username"`
 	UserEmail         string     `json:"user_email"`
 	UserAvatar        string     `json:"user_avatar"`
 	ProjectID         int64      `json:"project_id"`
-	Project           Project    `json:"Project"`
+	Project           Project    `json:"project"`
 	Repository        Repository `json:"repository"`
 	Commits           []Commit   `json:"commits"`
 	TotalCommitsCount int64      `json:"total_commits_count"`
@@ -331,10 +334,13 @@ type Project struct {
 
 // Repository contains all of the GitLab repository information
 type Repository struct {
-	Name        string `json:"name"`
-	URL         string `json:"url"`
-	Description string `json:"description"`
-	Homepage    string `json:"homepage"`
+	Name            string `json:"name"`
+	URL             string `json:"url"`
+	Description     string `json:"description"`
+	Homepage        string `json:"homepage"`
+	GitSSSHURL      string `json:"git_ssh_url"`
+	GitHTTPURL      string `json:"git_http_url"`
+	VisibilityLevel int64  `json:"visibility_level"`
 }
 
 // ObjectAttributes contains all of the GitLab object attributes information
