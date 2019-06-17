@@ -6,7 +6,7 @@ stages:
 
 before_script:
   - mkdir -p "/go/src/dev.sum7.eu/$CI_PROJECT_NAMESPACE/"
-  - cp -R "/builds/$CI_PROJECT_PATH" "/go/src/dev.sum7.eu/$CI_PROJECT_NAMESPACE/"
+  - cp -R "$CI_PROJECT_DIR" "/go/src/dev.sum7.eu/$CI_PROJECT_NAMESPACE/"
   - cd "/go/src/dev.sum7.eu/$CI_PROJECT_PATH"
   - go get -d -t ./...
 
@@ -28,6 +28,7 @@ test-my-project:
     - ./.ci/check-gofmt
     - ./.ci/check-testfiles
     - go test $(go list ./... | grep -v /vendor/) -v -coverprofile .testCoverage.txt
+    - go tool cover -func=.testCoverage.txt
   artifacts:
     paths:
      - .testCoverage.txt
