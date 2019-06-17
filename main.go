@@ -15,6 +15,7 @@ import (
 	_ "dev.sum7.eu/genofire/hook2xmpp/git"
 	_ "dev.sum7.eu/genofire/hook2xmpp/gitlab"
 	_ "dev.sum7.eu/genofire/hook2xmpp/grafana"
+	_ "dev.sum7.eu/genofire/hook2xmpp/prometheus"
 	"dev.sum7.eu/genofire/hook2xmpp/runtime"
 )
 
