@@ -13,12 +13,13 @@ before_script:
 build-my-project:
   stage: build
   script:
+    - mkdir "$CI_PROJECT_DIR/bin/"
     - go install "dev.sum7.eu/$CI_PROJECT_PATH"
-    - mv "/go/bin/$CI_PROJECT_NAME" "/builds/$CI_PROJECT_PATH"
+    - mv "/go/bin/$CI_PROJECT_NAME" "$CI_PROJECT_DIR/bin/$CI_PROJECT_NAME"
   artifacts:
     paths:
-      - config_example.conf
-      - "$CI_PROJECT_NAME"
+      - "bin/$CI_PROJECT_NAME"
+      - config_example.toml
 
 test-my-project:
   stage: test
