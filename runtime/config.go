@@ -7,16 +7,9 @@ type Config struct {
 	WebserverBind string       `toml:"webserver_bind"`
 
 	XMPP struct {
-		Host          string `toml:"host"`
-		Username      string `toml:"username"`
-		Resource      string `toml:"resource"`
-		Password      string `toml:"password"`
-		Debug         bool   `toml:"debug"`
-		NoTLS         bool   `toml:"no_tls"`
-		StartTLS      bool   `toml:"start_tls"`
-		Session       bool   `toml:"session"`
-		Status        string `toml:"status"`
-		StatusMessage string `toml:"status_message"`
+		Address  string `toml:"address"`
+		JID      string `toml:"jid"`
+		Password string `toml:"password"`
 	} `toml:"xmpp"`
 
 	Nickname string `toml:"nickname"`

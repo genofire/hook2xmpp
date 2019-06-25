@@ -1,51 +1,47 @@
 package runtime
 
 import (
-	"fmt"
-
-	"github.com/bdlm/log"
-	xmpp "github.com/mattn/go-xmpp"
+	"gosrc.io/xmpp"
 )
 
-func Start(client *xmpp.Client) {
-	for {
-		m, err := client.Recv()
-		if err != nil {
-			continue
-		}
-		switch v := m.(type) {
-		case xmpp.Chat:
-			if v.Type == "chat" {
-				log.Debugf("from %s: %s", v.Remote, v.Text)
-			}
-			if v.Type == "groupchat" {
-			}
-		case xmpp.Presence:
-			// do nothing
-		}
-	}
-}
 func NotifyImage(client *xmpp.Client, hook Hook, url string, desc string) {
-	msg := fmt.Sprintf(`<message to='%%s' type='%%s'>
-		<body>%s</body>
-		<x xmlns='jabber:x:oob'>
-			<url>%s</url>
-			<desc>%s</desc>
-		</x>
-	</message>`, url, url, desc)
+	msg := xmpp.Message{
+		Attrs: xmpp.Attrs{Type: xmpp.MessageTypeGroupchat},
+		Body:  url,
+		Extensions: []xmpp.MsgExtension{
+			xmpp.OOB{URL: url, Desc: desc},
+		},
+	}
 
 	for _, muc := range hook.NotifyMuc {
-		client.SendOrg(fmt.Sprintf(msg, muc, "groupchat"))
+		msg.To = muc
+		client.Send(msg)
 	}
+
+	msg.Type = xmpp.MessageTypeChat
 	for _, user := range hook.NotifyUser {
-		client.SendOrg(fmt.Sprintf(msg, user, "chat"))
+		msg.To = user
+		client.Send(msg)
 	}
 }
-func Notify(client *xmpp.Client, hook Hook, msg string) {
-	for _, muc := range hook.NotifyMuc {
-		client.SendHtml(xmpp.Chat{Remote: muc, Type: "groupchat", Text: msg})
+
+func Notify(client *xmpp.Client, hook Hook, text, html string) {
+	msg := xmpp.Message{
+		Attrs: xmpp.Attrs{Type: xmpp.MessageTypeGroupchat},
+		Body:  text,
+		Extensions: []xmpp.MsgExtension{
+			xmpp.HTML{Body: xmpp.HTMLBody{InnerXML: html}},
+		},
 	}
+
+	for _, muc := range hook.NotifyMuc {
+		msg.To = muc
+		client.Send(msg)
+	}
+
+	msg.Type = xmpp.MessageTypeChat
 	for _, user := range hook.NotifyUser {
-		client.SendHtml(xmpp.Chat{Remote: user, Type: "chat", Text: msg})
+		msg.To = user
+		client.Send(msg)
 	}
 }

@@ -7,7 +7,7 @@ import (
 
 	libHTTP "dev.sum7.eu/genofire/golang-lib/http"
 	"github.com/bdlm/log"
-	xmpp "github.com/mattn/go-xmpp"
+	"gosrc.io/xmpp"
 
 	"dev.sum7.eu/genofire/hook2xmpp/runtime"
 )
@@ -47,12 +47,14 @@ func init() {
 			})
 
 			ok := false
+			msg := request.String()
+
 			for _, hook := range hooks {
 				if request.Payload.VCSURL != hook.Secret {
 					continue
 				}
 				logger.Infof("run hook")
-				runtime.Notify(client, hook, request.String())
+				runtime.Notify(client, hook, msg, msg)
 				ok = true
 			}
 			if !ok {

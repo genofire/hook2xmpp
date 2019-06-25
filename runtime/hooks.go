@@ -3,7 +3,7 @@ package runtime
 import (
 	"net/http"
 
-	xmpp "github.com/mattn/go-xmpp"
+	"gosrc.io/xmpp"
 )
 
 type HookHandler func(*xmpp.Client, []Hook) func(http.ResponseWriter, *http.Request)

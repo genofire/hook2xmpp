@@ -6,7 +6,7 @@ import (
 
 	libHTTP "dev.sum7.eu/genofire/golang-lib/http"
 	"github.com/bdlm/log"
-	xmpp "github.com/mattn/go-xmpp"
+	"gosrc.io/xmpp"
 
 	"dev.sum7.eu/genofire/hook2xmpp/runtime"
 )
@@ -65,12 +65,14 @@ func init() {
 			})
 
 			ok = false
+			msg := request.String()
+
 			for _, hook := range hooks {
 				if secret != hook.Secret {
 					continue
 				}
 
-				runtime.Notify(client, hook, request.String())
+				runtime.Notify(client, hook, msg, msg)
 				if request.ImageURL != "" {
 					runtime.NotifyImage(client, hook, request.ImageURL, request.String())
 				} else {

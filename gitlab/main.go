@@ -10,7 +10,7 @@ import (
 
 	libHTTP "dev.sum7.eu/genofire/golang-lib/http"
 	"github.com/bdlm/log"
-	xmpp "github.com/mattn/go-xmpp"
+	"gosrc.io/xmpp"
 
 	"dev.sum7.eu/genofire/hook2xmpp/runtime"
 )
@@ -131,7 +131,7 @@ func init() {
 					continue
 				}
 				logger.Infof("run hook")
-				runtime.Notify(client, hook, msg)
+				runtime.Notify(client, hook, msg, msg)
 				ok = true
 			}
 			if !ok {
