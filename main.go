@@ -34,6 +34,7 @@ func main() {
 
 	router := xmpp.NewRouter()
 	client, err := xmpp.NewClient(xmpp.Config{
+		Address:  config.XMPP.Address,
 		Jid:      config.XMPP.JID,
 		Password: config.XMPP.Password,
 	}, router)

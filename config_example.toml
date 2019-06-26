@@ -2,8 +2,8 @@ log_level = 50
 webserver_bind = ":8080"
 
 [xmpp]
-host = "fireorbit.de"
-username = "bot@fireorbit.de"
+address  = "fireorbit.de"
+jid      = "bot@fireorbit.de"
 password = "example"
 startup_notify_user = ["user@fireorbit.de"]
 startup_notify_muc = []
