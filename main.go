@@ -19,14 +19,14 @@ import (
 	"dev.sum7.eu/genofire/hook2xmpp/runtime"
 )
 
-var config *runtime.Config
+var config = runtime.Config{}
 
 func main() {
 	configFile := "config.conf"
 	flag.StringVar(&configFile, "config", configFile, "path of configuration file")
 	flag.Parse()
 
-	if err := file.ReadTOML(configFile, config); err != nil {
+	if err := file.ReadTOML(configFile, &config); err != nil {
 		log.WithField("tip", "maybe call me with: hook2xmpp--config /etc/hook2xmpp.conf").Panicf("error on read config: %s", err)
 	}
 
@@ -45,8 +45,8 @@ func main() {
 
 	cm := xmpp.NewStreamManager(client, postStartup)
 	go func() {
-		cm.Run()
-		log.Panic("closed connection")
+		err := cm.Run()
+		log.Panic("closed connection:", err)
 	}()
 	for hookType, getHandler := range runtime.HookRegister {
 		hooks, ok := config.Hooks[hookType]

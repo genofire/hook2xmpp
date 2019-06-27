@@ -1,12 +1,15 @@
 log_level = 50
 webserver_bind = ":8080"
 
+startup_notify_user = ["user@fireorbit.de"]
+startup_notify_muc = []
+
+nickname = "logbot"
+
 [xmpp]
 address  = "fireorbit.de"
 jid      = "bot@fireorbit.de"
 password = "example"
-startup_notify_user = ["user@fireorbit.de"]
-startup_notify_muc = []
 
 # suported hooks are, which could be declared multiple times with different `secrets` (see [[hooks.grafana]]):
 [[hooks.grafana]]

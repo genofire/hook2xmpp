@@ -29,7 +29,6 @@ func notify(text string) {
 
 func joinMUC(to, nick string) error {
 
-	maxstanzas := 0
 	toJID, err := xmpp.NewJid(to)
 	if err != nil {
 		return err
@@ -42,7 +41,7 @@ func joinMUC(to, nick string) error {
 	return client.Send(xmpp.Presence{Attrs: xmpp.Attrs{To: jid},
 		Extensions: []xmpp.PresExtension{
 			xmpp.MucPresence{
-				History: xmpp.History{MaxStanzas: &maxstanzas},
+				History: xmpp.History{MaxStanzas: xmpp.NewNullableInt(0)},
 			}},
 	})
 
