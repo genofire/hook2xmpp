@@ -1,47 +1,70 @@
 package runtime
 
 import (
+	"github.com/bdlm/log"
+
 	"gosrc.io/xmpp"
+	"gosrc.io/xmpp/stanza"
 )
 
 func NotifyImage(client *xmpp.Client, hook Hook, url string, desc string) {
-	msg := xmpp.Message{
-		Attrs: xmpp.Attrs{Type: xmpp.MessageTypeGroupchat},
+	msg := stanza.Message{
+		Attrs: stanza.Attrs{Type: stanza.MessageTypeGroupchat},
 		Body:  url,
-		Extensions: []xmpp.MsgExtension{
-			xmpp.OOB{URL: url, Desc: desc},
+		Extensions: []stanza.MsgExtension{
+			stanza.OOB{URL: url, Desc: desc},
 		},
 	}
 
 	for _, muc := range hook.NotifyMuc {
 		msg.To = muc
-		client.Send(msg)
+		if err := client.Send(msg); err != nil {
+			log.WithFields(map[string]interface{}{
+				"muc": muc,
+				"url": url,
+			}).Errorf("error on image notify: %s", err)
+		}
 	}
 
-	msg.Type = xmpp.MessageTypeChat
+	msg.Type = stanza.MessageTypeChat
 	for _, user := range hook.NotifyUser {
 		msg.To = user
-		client.Send(msg)
+		if err := client.Send(msg); err != nil {
+			log.WithFields(map[string]interface{}{
+				"user": user,
+				"url":  url,
+			}).Errorf("error on image notify: %s", err)
+		}
 	}
 }
 
 func Notify(client *xmpp.Client, hook Hook, text, html string) {
-	msg := xmpp.Message{
-		Attrs: xmpp.Attrs{Type: xmpp.MessageTypeGroupchat},
+	msg := stanza.Message{
+		Attrs: stanza.Attrs{Type: stanza.MessageTypeGroupchat},
 		Body:  text,
-		Extensions: []xmpp.MsgExtension{
-			xmpp.HTML{Body: xmpp.HTMLBody{InnerXML: html}},
+		Extensions: []stanza.MsgExtension{
+			stanza.HTML{Body: stanza.HTMLBody{InnerXML: html}},
 		},
 	}
 
 	for _, muc := range hook.NotifyMuc {
 		msg.To = muc
-		client.Send(msg)
+		if err := client.Send(msg); err != nil {
+			log.WithFields(map[string]interface{}{
+				"muc":  muc,
+				"text": text,
+			}).Errorf("error on notify: %s", err)
+		}
 	}
 
-	msg.Type = xmpp.MessageTypeChat
+	msg.Type = stanza.MessageTypeChat
 	for _, user := range hook.NotifyUser {
 		msg.To = user
-		client.Send(msg)
+		if err := client.Send(msg); err != nil {
+			log.WithFields(map[string]interface{}{
+				"user": user,
+				"text": text,
+			}).Errorf("error on notify: %s", err)
+		}
 	}
 }

@@ -3,26 +3,37 @@ package main
 import (
 	"github.com/bdlm/log"
 	"gosrc.io/xmpp"
+	"gosrc.io/xmpp/stanza"
 )
 
 var client *xmpp.Client
 var mucs []string
 
 func notify(text string) {
-	msg := xmpp.Message{
-		Attrs: xmpp.Attrs{Type: xmpp.MessageTypeGroupchat},
+	msg := stanza.Message{
+		Attrs: stanza.Attrs{Type: stanza.MessageTypeGroupchat},
 		Body:  text,
 	}
 
 	for _, muc := range config.StartupNotifyMuc {
 		msg.To = muc
-		client.Send(msg)
+		if err := client.Send(msg); err != nil {
+			log.WithFields(map[string]interface{}{
+				"muc": muc,
+				"msg": text,
+			}).Errorf("error on startup notify: %s", err)
+		}
 	}
 
-	msg.Type = xmpp.MessageTypeChat
+	msg.Type = stanza.MessageTypeChat
 	for _, user := range config.StartupNotifyUser {
 		msg.To = user
-		client.Send(msg)
+		if err := client.Send(msg); err != nil {
+			log.WithFields(map[string]interface{}{
+				"user": user,
+				"msg":  text,
+			}).Errorf("error on startup notify: %s", err)
+		}
 	}
 	log.Infof("notify: %s", text)
 }
@@ -38,10 +49,10 @@ func joinMUC(to, nick string) error {
 
 	mucs = append(mucs, jid)
 
-	return client.Send(xmpp.Presence{Attrs: xmpp.Attrs{To: jid},
-		Extensions: []xmpp.PresExtension{
-			xmpp.MucPresence{
-				History: xmpp.History{MaxStanzas: xmpp.NewNullableInt(0)},
+	return client.Send(stanza.Presence{Attrs: stanza.Attrs{To: jid},
+		Extensions: []stanza.PresExtension{
+			stanza.MucPresence{
+				History: stanza.History{MaxStanzas: stanza.NewNullableInt(0)},
 			}},
 	})
 
@@ -49,12 +60,16 @@ func joinMUC(to, nick string) error {
 
 func postStartup(c xmpp.StreamClient) {
 	for _, muc := range config.StartupNotifyMuc {
-		joinMUC(muc, config.Nickname)
+		if err := joinMUC(muc, config.Nickname); err != nil {
+			log.WithField("muc", muc).Errorf("error on joining muc: %s", err)
+		}
 	}
 	for _, hooks := range config.Hooks {
 		for _, hook := range hooks {
 			for _, muc := range hook.NotifyMuc {
-				joinMUC(muc, config.Nickname)
+				if err := joinMUC(muc, config.Nickname); err != nil {
+					log.WithField("muc", muc).Errorf("error on joining muc: %s", err)
+				}
 			}
 		}
 	}
@@ -65,10 +80,12 @@ func closeXMPP() {
 	notify("stopped of hock2xmpp")
 
 	for _, muc := range mucs {
-		client.Send(xmpp.Presence{Attrs: xmpp.Attrs{
+		if err := client.Send(stanza.Presence{Attrs: stanza.Attrs{
 			To:   muc,
-			Type: xmpp.PresenceTypeUnavailable,
-		}})
+			Type: stanza.PresenceTypeUnavailable,
+		}}); err != nil {
+			log.WithField("muc", muc).Errorf("error on leaving muc: %s", err)
+		}
 	}
 
 }
