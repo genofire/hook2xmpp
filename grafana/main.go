@@ -37,6 +37,21 @@ func (r requestBody) String() string {
 	}
 	return msg
 }
+func (r requestBody) HTML() string {
+	stateColor := "#ffff00"
+	switch r.State {
+	case "alerting":
+		stateColor = "#ff0000"
+	case "ok":
+		stateColor = "#00ff00"
+	}
+
+	msg := fmt.Sprintf("<span style=\"color: %s;\">%s</span> <span style=\"font-weight: bold;\">%s</span>: %s<br/>", stateColor, r.State, r.RuleName, r.Message)
+	for _, e := range r.EvalMatches {
+		msg = fmt.Sprintf("%s %s=%f", msg, e.Metric, e.Value)
+	}
+	return msg
+}
 
 func init() {
 	runtime.HookRegister[hookType] = func(client xmpp.Sender, hooks []runtime.Hook) func(w http.ResponseWriter, r *http.Request) {
@@ -66,13 +81,14 @@ func init() {
 
 			ok = false
 			msg := request.String()
+			html := request.HTML()
 
 			for _, hook := range hooks {
 				if secret != hook.Secret {
 					continue
 				}
 
-				runtime.Notify(client, hook, msg, msg)
+				runtime.Notify(client, hook, msg, html)
 				if request.ImageURL != "" {
 					runtime.NotifyImage(client, hook, request.ImageURL, request.String())
 				} else {
