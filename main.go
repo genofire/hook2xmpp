@@ -33,6 +33,7 @@ func main() {
 	log.SetLevel(config.LogLevel)
 
 	router := xmpp.NewRouter()
+	var err error
 	client, err := xmpp.NewClient(xmpp.Config{
 		Address:  config.XMPP.Address,
 		Jid:      config.XMPP.JID,
@@ -69,7 +70,7 @@ func main() {
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	sig := <-sigs
 
-	closeXMPP()
+	closeXMPP(client)
 
 	srv.Close()
 

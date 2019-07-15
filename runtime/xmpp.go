@@ -7,7 +7,7 @@ import (
 	"gosrc.io/xmpp/stanza"
 )
 
-func NotifyImage(client *xmpp.Client, hook Hook, url string, desc string) {
+func NotifyImage(client xmpp.Sender, hook Hook, url string, desc string) {
 	msg := stanza.Message{
 		Attrs: stanza.Attrs{Type: stanza.MessageTypeGroupchat},
 		Body:  url,
@@ -38,7 +38,7 @@ func NotifyImage(client *xmpp.Client, hook Hook, url string, desc string) {
 	}
 }
 
-func Notify(client *xmpp.Client, hook Hook, text, html string) {
+func Notify(client xmpp.Sender, hook Hook, text, html string) {
 	msg := stanza.Message{
 		Attrs: stanza.Attrs{Type: stanza.MessageTypeGroupchat},
 		Body:  text,

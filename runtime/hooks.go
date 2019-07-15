@@ -6,7 +6,7 @@ import (
 	"gosrc.io/xmpp"
 )
 
-type HookHandler func(*xmpp.Client, []Hook) func(http.ResponseWriter, *http.Request)
+type HookHandler func(xmpp.Sender, []Hook) func(http.ResponseWriter, *http.Request)
 
 var HookRegister map[string]HookHandler
 

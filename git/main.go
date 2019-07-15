@@ -21,7 +21,7 @@ var eventHeader = map[string]string{
 const hookType = "git"
 
 func init() {
-	runtime.HookRegister[hookType] = func(client *xmpp.Client, hooks []runtime.Hook) func(w http.ResponseWriter, r *http.Request) {
+	runtime.HookRegister[hookType] = func(client xmpp.Sender, hooks []runtime.Hook) func(w http.ResponseWriter, r *http.Request) {
 		log.WithField("type", hookType).Info("loaded")
 		return func(w http.ResponseWriter, r *http.Request) {
 			logger := log.WithField("type", hookType)
