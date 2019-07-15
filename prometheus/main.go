@@ -29,16 +29,31 @@ func init() {
 				return
 			}
 
+			// title
 			content := strings.Join(request.GroupLabels.Values(), " ")
+			html := fmt.Sprintf(`<span style="font-weight: bold;">%s</span>`, content)
+
+			statusColor := "#ffff00"
+
+			switch request.Status {
+			case "resolved":
+				statusColor = "#00ff00"
+			case "firing":
+				statusColor = "#ff8700"
+			}
+
 			firingAlerts := request.Alerts.Firing()
 			if len(firingAlerts) > 0 {
 				for _, a := range firingAlerts {
 					if description, ok := a.Annotations["message"]; ok {
 						content = fmt.Sprintf("%s\n%s", content, description)
+						html = fmt.Sprintf("%s<br/>%s", html, description)
 					}
 				}
 				content = fmt.Sprintf("[%s:%d] %s", request.Status, len(firingAlerts), content)
+				html = fmt.Sprintf(`<span style="color:%s">%s:%d</span> %s`, statusColor, request.Status, len(firingAlerts), html)
 			} else {
+				html = fmt.Sprintf(`<span style="color:%s">%s</span> %s`, statusColor, request.Status, content)
 				content = fmt.Sprintf("[%s] %s", request.Status, content)
 			}
 
@@ -51,7 +66,7 @@ func init() {
 					continue
 				}
 				logger.Infof("run hook")
-				runtime.Notify(client, hook, content, content)
+				runtime.Notify(client, hook, content, html)
 				ok = true
 			}
 			if !ok {
