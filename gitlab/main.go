@@ -10,7 +10,7 @@ import (
 
 	libHTTP "dev.sum7.eu/genofire/golang-lib/http"
 	"github.com/bdlm/log"
-	xmpp "github.com/mattn/go-xmpp"
+	"gosrc.io/xmpp"
 
 	"dev.sum7.eu/genofire/hook2xmpp/runtime"
 )
@@ -24,7 +24,7 @@ var eventHeader = map[string]string{
 const hookType = "gitlab"
 
 func init() {
-	runtime.HookRegister[hookType] = func(client *xmpp.Client, hooks []runtime.Hook) func(w http.ResponseWriter, r *http.Request) {
+	runtime.HookRegister[hookType] = func(client xmpp.Sender, hooks []runtime.Hook) func(w http.ResponseWriter, r *http.Request) {
 		log.WithField("type", hookType).Info("loaded")
 		return func(w http.ResponseWriter, r *http.Request) {
 			event := r.Header.Get("X-Gitlab-Event")
@@ -131,7 +131,7 @@ func init() {
 					continue
 				}
 				logger.Infof("run hook")
-				runtime.Notify(client, hook, msg)
+				runtime.Notify(client, hook, msg, msg)
 				ok = true
 			}
 			if !ok {

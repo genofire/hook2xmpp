@@ -1,51 +1,70 @@
 package runtime
 
 import (
-	"fmt"
-
 	"github.com/bdlm/log"
-	xmpp "github.com/mattn/go-xmpp"
+
+	"gosrc.io/xmpp"
+	"gosrc.io/xmpp/stanza"
 )
 
-func Start(client *xmpp.Client) {
-	for {
-		m, err := client.Recv()
-		if err != nil {
-			continue
-		}
-		switch v := m.(type) {
-		case xmpp.Chat:
-			if v.Type == "chat" {
-				log.Debugf("from %s: %s", v.Remote, v.Text)
-			}
-			if v.Type == "groupchat" {
-			}
-		case xmpp.Presence:
-			// do nothing
-		}
+func NotifyImage(client xmpp.Sender, hook Hook, url string, desc string) {
+	msg := stanza.Message{
+		Attrs: stanza.Attrs{Type: stanza.MessageTypeGroupchat},
+		Body:  url,
+		Extensions: []stanza.MsgExtension{
+			stanza.OOB{URL: url, Desc: desc},
+		},
 	}
-}
-func NotifyImage(client *xmpp.Client, hook Hook, url string, desc string) {
-	msg := fmt.Sprintf(`<message to='%%s' type='%%s'>
-		<body>%s</body>
-		<x xmlns='jabber:x:oob'>
-			<url>%s</url>
-			<desc>%s</desc>
-		</x>
-	</message>`, url, url, desc)
 
 	for _, muc := range hook.NotifyMuc {
-		client.SendOrg(fmt.Sprintf(msg, muc, "groupchat"))
+		msg.To = muc
+		if err := client.Send(msg); err != nil {
+			log.WithFields(map[string]interface{}{
+				"muc": muc,
+				"url": url,
+			}).Errorf("error on image notify: %s", err)
+		}
 	}
+
+	msg.Type = stanza.MessageTypeChat
 	for _, user := range hook.NotifyUser {
-		client.SendOrg(fmt.Sprintf(msg, user, "chat"))
+		msg.To = user
+		if err := client.Send(msg); err != nil {
+			log.WithFields(map[string]interface{}{
+				"user": user,
+				"url":  url,
+			}).Errorf("error on image notify: %s", err)
+		}
 	}
 }
-func Notify(client *xmpp.Client, hook Hook, msg string) {
-	for _, muc := range hook.NotifyMuc {
-		client.SendHtml(xmpp.Chat{Remote: muc, Type: "groupchat", Text: msg})
+
+func Notify(client xmpp.Sender, hook Hook, text, html string) {
+	msg := stanza.Message{
+		Attrs: stanza.Attrs{Type: stanza.MessageTypeGroupchat},
+		Body:  text,
+		Extensions: []stanza.MsgExtension{
+			stanza.HTML{Body: stanza.HTMLBody{InnerXML: html}},
+		},
 	}
+
+	for _, muc := range hook.NotifyMuc {
+		msg.To = muc
+		if err := client.Send(msg); err != nil {
+			log.WithFields(map[string]interface{}{
+				"muc":  muc,
+				"text": text,
+			}).Errorf("error on notify: %s", err)
+		}
+	}
+
+	msg.Type = stanza.MessageTypeChat
 	for _, user := range hook.NotifyUser {
-		client.SendHtml(xmpp.Chat{Remote: user, Type: "chat", Text: msg})
+		msg.To = user
+		if err := client.Send(msg); err != nil {
+			log.WithFields(map[string]interface{}{
+				"user": user,
+				"text": text,
+			}).Errorf("error on notify: %s", err)
+		}
 	}
 }

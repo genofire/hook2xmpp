@@ -8,8 +8,8 @@ import (
 
 	libHTTP "dev.sum7.eu/genofire/golang-lib/http"
 	"github.com/bdlm/log"
-	xmpp "github.com/mattn/go-xmpp"
 	"github.com/prometheus/alertmanager/notify/webhook"
+	"gosrc.io/xmpp"
 
 	"dev.sum7.eu/genofire/hook2xmpp/runtime"
 )
@@ -17,7 +17,7 @@ import (
 const hookType = "prometheus"
 
 func init() {
-	runtime.HookRegister[hookType] = func(client *xmpp.Client, hooks []runtime.Hook) func(w http.ResponseWriter, r *http.Request) {
+	runtime.HookRegister[hookType] = func(client xmpp.Sender, hooks []runtime.Hook) func(w http.ResponseWriter, r *http.Request) {
 		log.WithField("type", hookType).Info("loaded")
 		return func(w http.ResponseWriter, r *http.Request) {
 			logger := log.WithField("type", hookType)
@@ -51,7 +51,7 @@ func init() {
 					continue
 				}
 				logger.Infof("run hook")
-				runtime.Notify(client, hook, content)
+				runtime.Notify(client, hook, content, content)
 				ok = true
 			}
 			if !ok {
