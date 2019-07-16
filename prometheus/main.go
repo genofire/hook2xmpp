@@ -39,7 +39,7 @@ func init() {
 			case "resolved":
 				statusColor = "#00ff00"
 			case "firing":
-				statusColor = "#ff8700"
+				statusColor = "#ff0000"
 			}
 
 			firingAlerts := request.Alerts.Firing()
