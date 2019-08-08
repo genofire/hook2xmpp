@@ -9,7 +9,7 @@ import (
 	"github.com/bdlm/log"
 	"gosrc.io/xmpp"
 
-	"dev.sum7.eu/genofire/hook2xmpp/runtime"
+	"dev.sum7.eu/sum7/hook2xmpp/runtime"
 )
 
 const hookType = "circleci"

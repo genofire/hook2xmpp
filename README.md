@@ -1,10 +1,10 @@
 # hook2xmpp
 
 
-[![pipeline status](https://dev.sum7.eu/genofire/hook2xmpp/badges/master/pipeline.svg)](https://dev.sum7.eu/genofire/hook2xmpp/pipelines)
-[![coverage report](https://dev.sum7.eu/genofire/hook2xmpp/badges/master/coverage.svg)](https://dev.sum7.eu/genofire/hook2xmpp/pipelines)
-[![Go Report Card](https://goreportcard.com/badge/dev.sum7.eu/genofire/hook2xmpp)](https://goreportcard.com/report/dev.sum7.eu/genofire/hook2xmpp)
-[![GoDoc](https://godoc.org/dev.sum7.eu/genofire/hook2xmpp?status.svg)](https://godoc.org/dev.sum7.eu/genofire/hook2xmpp)
+[![pipeline status](https://dev.sum7.eu/sum7/hook2xmpp/badges/master/pipeline.svg)](https://dev.sum7.eu/genofire/hook2xmpp/pipelines)
+[![coverage report](https://dev.sum7.eu/sum7/hook2xmpp/badges/master/coverage.svg)](https://dev.sum7.eu/genofire/hook2xmpp/pipelines)
+[![Go Report Card](https://goreportcard.com/badge/dev.sum7.eu/sum7/hook2xmpp)](https://goreportcard.com/report/dev.sum7.eu/genofire/hook2xmpp)
+[![GoDoc](https://godoc.org/dev.sum7.eu/sum7/hook2xmpp?status.svg)](https://godoc.org/dev.sum7.eu/genofire/hook2xmpp)
 
 
 ## Get hook2xmpp
@@ -13,14 +13,14 @@
 
 Latest Build binary from ci here:
 
-[Download All](https://dev.sum7.eu/genofire/hook2xmpp/-/jobs/artifacts/master/download/?job=build-my-project) (with config example)
+[Download All](https://dev.sum7.eu/sum7/hook2xmpp/-/jobs/artifacts/master/download/?job=build-my-project) (with config example)
 
-[Download Binary](https://dev.sum7.eu/genofire/hook2xmpp/-/jobs/artifacts/master/raw/bin/hook2xmpp?inline=false&job=build-my-project)
+[Download Binary](https://dev.sum7.eu/sum7/hook2xmpp/-/jobs/artifacts/master/raw/bin/hook2xmpp?inline=false&job=build-my-project)
 
 #### Build
 
 ```bash
-go get -u dev.sum7.eu/genofire/hook2xmpp
+go get -u dev.sum7.eu/sum7/hook2xmpp
 ```
 
 ## Configure

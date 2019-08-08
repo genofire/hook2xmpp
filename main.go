@@ -11,12 +11,12 @@ import (
 	"github.com/bdlm/log"
 	"gosrc.io/xmpp"
 
-	_ "dev.sum7.eu/genofire/hook2xmpp/circleci"
-	_ "dev.sum7.eu/genofire/hook2xmpp/git"
-	_ "dev.sum7.eu/genofire/hook2xmpp/gitlab"
-	_ "dev.sum7.eu/genofire/hook2xmpp/grafana"
-	_ "dev.sum7.eu/genofire/hook2xmpp/prometheus"
-	"dev.sum7.eu/genofire/hook2xmpp/runtime"
+	_ "dev.sum7.eu/sum7/hook2xmpp/circleci"
+	_ "dev.sum7.eu/sum7/hook2xmpp/git"
+	_ "dev.sum7.eu/sum7/hook2xmpp/gitlab"
+	_ "dev.sum7.eu/sum7/hook2xmpp/grafana"
+	_ "dev.sum7.eu/sum7/hook2xmpp/prometheus"
+	"dev.sum7.eu/sum7/hook2xmpp/runtime"
 )
 
 var config = runtime.Config{}
