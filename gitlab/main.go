@@ -92,6 +92,11 @@ func init() {
 				err = libHTTP.Read(r, &pl)
 				msg = pl.String()
 
+			case JobEvents:
+				var pl JobEventPayload
+				err = libHTTP.Read(r, &pl)
+				msg = pl.String()
+
 			case SystemEvents:
 				var data map[string]interface{}
 				var buf bytes.Buffer

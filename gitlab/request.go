@@ -18,6 +18,7 @@ const (
 	MergeRequestEvents       Event = "Merge Request Hook"
 	WikiPageEvents           Event = "Wiki Page Hook"
 	PipelineEvents           Event = "Pipeline Hook"
+	JobEvents                Event = "Job Hook"
 	BuildEvents              Event = "Build Hook"
 	SystemEvents             Event = "System Hook"
 )
@@ -59,10 +60,10 @@ type IssueEventPayload struct {
 }
 
 func (pl *IssueEventPayload) SubString() string {
-	return ""
+	return fmt.Sprintf(`#%d (%s) "%s" - %s`, pl.ObjectAttributes.IID, pl.ObjectAttributes.State, pl.ObjectAttributes.Title, pl.ObjectAttributes.Action)
 }
 func (pl *IssueEventPayload) String() string {
-	return fmt.Sprintf("[%s] %s: %s", pl.Project.Name, IssuesEvents, pl.SubString())
+	return fmt.Sprintf("[%s] %s", pl.Project.Name, pl.SubString())
 }
 
 // ConfidentialIssueEventPayload contains the information for GitLab's confidential issue event
@@ -151,16 +152,26 @@ func (pl *WikiPageEventPayload) String() string {
 
 // PipelineEventPayload contains the information for GitLab's pipeline status change event
 type PipelineEventPayload struct {
-	ObjectKind       string           `json:"object_kind"`
-	User             User             `json:"user"`
-	Project          Project          `json:"project"`
-	Commit           Commit           `json:"commit"`
-	ObjectAttributes ObjectAttributes `json:"object_attributes"`
-	Builds           []Build          `json:"builds"`
+	ObjectKind       string                 `json:"object_kind"`
+	User             User                   `json:"user"`
+	Project          Project                `json:"project"`
+	Commit           Commit                 `json:"commit"`
+	ObjectAttributes map[string]interface{} `json:"object_attributes"`
+	Builds           []Build                `json:"builds"`
+}
+
+func (pl *PipelineEventPayload) GetCompleteBuilds() int {
+	i := 0
+	for _, b := range pl.Builds {
+		if b.Status != "created" {
+			i++
+		}
+	}
+	return i
 }
 
 func (pl *PipelineEventPayload) String() string {
-	return fmt.Sprintf("[%s] %s: started %d builds by %s of %s", pl.Project.Name, PipelineEvents, len(pl.Builds), pl.User.Name, pl.Commit.String())
+	return fmt.Sprintf(`[%s] Pipeline %v: %v %d/%d builds by %s of %v => "%s" (%s)`, pl.Project.Name, pl.ObjectAttributes["id"], pl.ObjectAttributes["status"], pl.GetCompleteBuilds(), len(pl.Builds), pl.User.Name, pl.ObjectAttributes["ref"], pl.Commit.Message, pl.Commit.ID)
 }
 
 // CommentEventPayload contains the information for GitLab's comment event
@@ -178,7 +189,36 @@ type CommentEventPayload struct {
 }
 
 func (pl *CommentEventPayload) String() string {
-	return fmt.Sprintf("[%s] %s: comment PR !%d by %s of %s", pl.Project.Name, CommentEvents, pl.MergeRequest.ID, pl.User.Name, pl.Commit.String())
+	return fmt.Sprintf("[%s] %s: comment MR !%d by %s of %s", pl.Project.Name, CommentEvents, pl.MergeRequest.ID, pl.User.Name, pl.Commit.String())
+}
+
+// JobEventPayload contains the information for GitLab's build status change event
+type JobEventPayload struct {
+	ObjectKind         string      `json:"object_kind"`
+	Ref                string      `json:"ref"`
+	Tag                bool        `json:"tag"`
+	BeforeSHA          string      `json:"before_sha"`
+	SHA                string      `json:"sha"`
+	BuildID            int64       `json:"build_id"`
+	BuildName          string      `json:"build_name"`
+	BuildStage         string      `json:"build_stage"`
+	BuildStatus        string      `json:"build_status"`
+	BuildStartedAt     customTime  `json:"build_started_at"`
+	BuildFinishedAt    customTime  `json:"build_finished_at"`
+	BuildDuration      float64     `json:"build_duration"`
+	BuildAllowFailure  bool        `json:"build_allow_failure"`
+	BuildFailureReason string      `json:"build_failure_reason"`
+	PipelineID         int64       `json:"pipeline_id"`
+	ProjectID          int64       `json:"project_id"`
+	ProjectName        string      `json:"project_name"`
+	User               User        `json:"user"`
+	Commit             BuildCommit `json:"commit"`
+	Repository         Repository  `json:"repository"`
+	Runner             Runner      `json:"runner"`
+}
+
+func (pl *JobEventPayload) String() string {
+	return fmt.Sprintf("[%s] %s: %s build %d (in pipeline %d) for %s / %s", pl.ProjectName, BuildEvents, pl.BuildStatus, pl.BuildID, pl.PipelineID, pl.Ref, pl.SHA)
 }
 
 // BuildEventPayload contains the information for GitLab's build status change event
@@ -276,7 +316,7 @@ type Commit struct {
 }
 
 func (c *Commit) String() string {
-	return fmt.Sprintf("[%s] %s from %s [+%d/-%d/\u00B1%d]", c.ID, c.Message, c.Author, len(c.Added), len(c.Removed), len(c.Modified))
+	return fmt.Sprintf(`[%s] "%s" from %s [+%d/-%d/\u00B1%d]`, c.ID, c.Message, c.Author, len(c.Added), len(c.Removed), len(c.Modified))
 }
 
 // BuildCommit contains all of the GitLab build commit information
