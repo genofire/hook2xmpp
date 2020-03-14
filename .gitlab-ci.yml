@@ -6,7 +6,6 @@ variables:
 stages:
   - build
   - test
-  - deploy
 
 before_script:
   - mkdir -p "/go/src/dev.sum7.eu/$CI_PROJECT_NAMESPACE/"
@@ -42,16 +41,3 @@ test-race-my-project:
   stage: test
   script:
     - go test -race ./...
-
-deploy:
-  stage: deploy
-  only:
-    - master
-  script:
-    - go install "dev.sum7.eu/$CI_PROJECT_PATH"
-    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
-    - eval $(ssh-agent -s)
-    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
-    - ssh -o StrictHostKeyChecking=no -p $SSH_PORT "$CI_PROJECT_NAME@$SSH_HOST" sudo /usr/bin/systemctl stop $CI_PROJECT_NAME
-    - scp -o StrictHostKeyChecking=no -P $SSH_PORT "/go/bin/$CI_PROJECT_NAME" "$CI_PROJECT_NAME@$SSH_HOST":/opt/$CI_PROJECT_NAME/bin
-    - ssh -o StrictHostKeyChecking=no -p $SSH_PORT "$CI_PROJECT_NAME@$SSH_HOST" sudo /usr/bin/systemctl start $CI_PROJECT_NAME
