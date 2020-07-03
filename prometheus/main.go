@@ -45,7 +45,7 @@ func init() {
 			firingAlerts := request.Alerts.Firing()
 			if len(firingAlerts) > 0 {
 				for _, a := range firingAlerts {
-					if description, ok := a.Annotations["message"]; ok {
+					if description, ok := a.Annotations["summary"]; ok {
 						content = fmt.Sprintf("%s\n%s", content, description)
 						html = fmt.Sprintf("%s<br/>%s", html, description)
 					}
